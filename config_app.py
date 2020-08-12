@@ -1,6 +1,6 @@
 import datetime
 
-default_admin_login = "admin"
+default_admin_login = "admin@admin.com"
 default_admin_password = "admin"
 
 host = "localhost"
