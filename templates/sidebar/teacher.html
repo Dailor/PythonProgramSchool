@@ -1,0 +1,23 @@
+<hr class="sidebar-divider my-0">
+<div class="sidebar-heading">
+    Учитель
+</div>
+<li class="nav-item">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages" aria-expanded="false"
+       aria-controls="collapsePages">
+        <i class="fas fa-fw"></i>
+        <span>Группы</span>
+    </a>
+    <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar" style="">
+        <div class="bg-white py-2 collapse-inner rounded">
+            {% for group in current_user.teacher.groups if group.is_active%}
+            <a class="collapse-item" href="/teacher/groups/{{group.id}}">{{group.name}}</a>
+            {% endfor %}
+        </div>
+    </div>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="/teacher/pupils/">
+        <i class="fas fa-fw"></i>
+        <span>Ученики</span></a>
+</li>

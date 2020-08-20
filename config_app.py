@@ -1,15 +1,21 @@
 import datetime
 
-default_admin_login = "admin@admin.com"
-default_admin_password = "admin"
 
-host = "localhost"
-port = "8080"
+class BaseConfig:
+    SECRET_KEY = "d7d2b771de3f6567cd3a4db4eb6751f2"
+    DEBUG = False
+    TESTING = False
+    HOST = "localhost"
+    PORT = "8080"
+    ADMIN_DEFAULT_EMAIL = "admin@admin.com"  # После первого захода рекомендуется сменить
+    ADMIN_DEFAULT_PASSWORD = "backdoorisnotavailable"  # После первого захода рекомендуется сменить
 
 
-def set_config(app):
-    app.config.update(
-        SECRET_KEY=b'q\x07\x18\xb8TE\xf4\xa8l\xe8\xfdX\xf1\xeaZ\xa4',
-        PERMANENT_SESSION_LIFETIME=datetime.timedelta(days=365)
-    )
+class DevelopmentConfig(BaseConfig):
+    DEBUG = True
+    TESTING = True
 
+
+class TestingConfig(BaseConfig):
+    DEBUG = False
+    TESTING = True

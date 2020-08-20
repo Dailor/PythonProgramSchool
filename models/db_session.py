@@ -8,7 +8,7 @@ SqlAlchemyBase = dec.declarative_base()
 __factory = None
 
 
-def global_init():
+def global_init(debug):
     global __factory
 
     if __factory:
@@ -21,10 +21,10 @@ def global_init():
     _password = 'root'  # НУЖНО ПОМЕНЯТЬ В БАЗЕ И ЗДЕСЬ
     _db_name = "python_school"  # Не забудьте создать базу с таким именем
 
-    conn_str = f'mysql+pymysql://{_login}:{_password}@{_host}:{_port}/{_db_name}?charset=utf8mb4&binary_prefix=true'
+    conn_str = f'mysql+mysqldb://{_login}:{_password}@{_host}:{_port}/{_db_name}?charset=utf8mb4&binary_prefix=true'
     print(f"Подключение к базе данных по адресу {conn_str}")
 
-    engine = sa.create_engine(conn_str, echo=False)
+    engine = sa.create_engine(conn_str, echo=debug)
     __factory = orm.sessionmaker(bind=engine)
 
     from . import __all_models

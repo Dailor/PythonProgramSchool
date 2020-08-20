@@ -23,7 +23,7 @@ import sys
 import os
 
 path_to_project = [r"D:\\", r"Python projects", r"MyProjects", r"PythonProgramSchool"]
-sys.path.insert(0, os.path.join(path_to_project))
+sys.path.insert(0, os.path.join(*path_to_project))
 from models.db_session import SqlAlchemyBase
 import models.__all_models
 

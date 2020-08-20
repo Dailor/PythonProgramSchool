@@ -1,5 +1,9 @@
 from . import user
-from . import teacher
 from . import pupil
-from . import admin
+from . import teacher
+from . import subject
+from . import topic
+from . import task
+from . import lesson
 from . import group
+
