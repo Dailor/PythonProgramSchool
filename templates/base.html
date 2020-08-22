@@ -39,7 +39,7 @@
         <!-- Main Content -->
         <div id="content">
             {% include '/topbar/topbar.html' %}
-            <div class="container-fluid">
+            <div class="container-fluid {% block content_class %}{% endblock %}">
                 {% block content %}
                 {% endblock %}
             </div>

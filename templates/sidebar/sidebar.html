@@ -11,15 +11,15 @@
 
     {% if current_user.is_admin %}
     {% include "sidebar/admin.html" %}
-    {% endif %}
 
-    {% if current_user.is_teacher %}
+    {% elif current_user.is_teacher %}
     {% include "sidebar/teacher.html" %}
+
+    {% else %}
+    {% include "sidebar/pupil.html" %}
+
     {% endif %}
 
-    {% if current_user.is_pupil %}
-    {% include "sidebar/pupil.html" %}
-    {% endif %}
     <hr class="sidebar-divider d-none d-md-block">
 
     <div class="text-center d-none d-md-inline">

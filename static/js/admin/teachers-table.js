@@ -2,9 +2,9 @@ url_api_teacher = '/admin/api_teacher';
 site_url = document.location.origin
 url_edit_teacher = site_url + '/admin/teachers/edit/'
 
-admin_role = 'ADMIN';
-teacher_role = 'TEACHER';
-pupil_role = 'PUPIL';
+admin_role = 'Админ';
+teacher_role = 'Учитель';
+pupil_role = 'Ученик';
 
 dataSrc = 'teachers';
 

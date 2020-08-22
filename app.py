@@ -1,7 +1,7 @@
 import config_app
 from modules import admin
 from models import db_session
-from models.user import User, Role, UserRoles
+from models.user import User, Admin, UserRoles
 from forms.login import LoginForm, LoginAnswers
 from flask import Flask, render_template, request, redirect, flash
 from flask_login import login_user, logout_user, current_user, login_required
@@ -67,10 +67,8 @@ def add_default_admin():
     user.email = app.config["ADMIN_DEFAULT_EMAIL"]
     user.set_password(app.config["ADMIN_DEFAULT_PASSWORD"])
 
-    role = Role()
-    role.name = UserRoles.ADMIN
-
-    user.roles.append(role)
+    admin_user = Admin()
+    user.admin = admin_user
 
     session.add(user)
     session.commit()

@@ -2,9 +2,11 @@ url_api_user = '/admin/api_user';
 url_set_role = url_api_user + '/set_role';
 
 
-admin_role = 'ADMIN';
-teacher_role = 'TEACHER';
-pupil_role = 'PUPIL';
+admin_role = 'Админ';
+teacher_role = 'Учитель';
+pupil_role = 'Ученик';
+
+roles_setter_btn_class = [[admin_role, 'btn-danger'], [teacher_role, 'btn-warning'], [pupil_role, 'btn-success']]
 
 dataSrc = 'users';
 
@@ -44,9 +46,9 @@ function success_set_role(data, textStatus, jqXHR){
 }
 
 function set_role(role, user_id){
-    data = dataTable_users.row(user_id - 1).data();
-    data.set_role = role;
-
+    data = {'id': user_id,
+            'set_role': role
+            }
 
     $.ajax({
         url: url_set_role,
@@ -93,27 +95,30 @@ columns = [{id: 'id',
             title: "Назначить роли",
             type: 'readonly',
             render: function(data, type, row, meta){
-                result = '';
-                left_obj = false;
+                var result = '';
+
+                if(row.roles != null){
+                    return result;
+                }
 
 
-                if (!row.roles.includes(admin_role)){
-                    params_function = string_in_quotes(admin_role) + ", " + row.id;
-                    result += '<button class="btn btn-danger" onclick="set_role('  + params_function + ')">Админ</button>';
-                    left_obj = true;
-                }
-                if (!row.roles.includes(teacher_role)){
-                    params_function = string_in_quotes(teacher_role) + ", " + row.id;
-                    result += '<button class="btn btn-warning' +  (left_obj?' ml-1':'') + '" onclick="set_role('  + params_function + ')">Учитель</button>';
-                    left_obj = true;
-                }
-                if (!row.roles.includes(pupil_role)){
-                    params_function = string_in_quotes(pupil_role) + ", " + row.id;
-                    result += '<button class="btn btn-success'  +  (left_obj?' ml-1':'') + '" onclick="set_role('  + params_function + ')">Ученик</button>';
+
+                var role_name;
+                var btn_type_class;
+
+
+                for(var index = 0; index < roles_setter_btn_class.length; index++){
+                    role_name = roles_setter_btn_class[index][0];
+                    btn_type_class = roles_setter_btn_class[index][1];
+                    params_function = string_in_quotes(role_name) + ", " + row.id;
+                    button_html = `<button class="btn ${btn_type_class}" onclick="set_role(${params_function})">${role_name}</button>`;
+                    result += `<div class="p-1">${button_html}</div>`;
+
                 }
 
                 return result;
             },
+
             searchable: false
             },
 

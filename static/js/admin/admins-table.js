@@ -3,9 +3,9 @@ url_api_user_get_admin = url_api_user + "?role=ADMIN";
 url_set_role = url_api_user + '/set_role';
 
 
-admin_role = 'ADMIN';
-teacher_role = 'TEACHER';
-pupil_role = 'PUPIL';
+admin_role = 'Админ';
+teacher_role = 'Учитель';
+pupil_role = 'Ученик';
 
 dataSrc = 'users';
 

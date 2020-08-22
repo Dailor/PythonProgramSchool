@@ -10,5 +10,5 @@ class Pupil(SqlAlchemyBase):
 
     user_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"), unique=True)
 
-    user = orm.relationship("User")
+    user = orm.relationship("User", back_populates="pupil")
     groups = orm.relationship("PupilsGroups", back_populates="pupil")

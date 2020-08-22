@@ -3,31 +3,31 @@ from sqlalchemy import orm
 from sqlalchemy_serializer import SerializerMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import UserMixin
-from .db_session import SqlAlchemyBase, create_session
+from .db_session import SqlAlchemyBase
+
+
+def title_return_string(func):
+    def wrapper(*args, **kwargs):
+        func_result = func(*args, **kwargs)
+        return func_result.title() if isinstance(func_result, str) else func_result
+
+    return wrapper
 
 
 class UserRoles:
-    ADMIN = "ADMIN"
-    PUPIL = "PUPIL"
-    TEACHER = "TEACHER"
+    ADMIN = "админ"
+    TEACHER = "учитель"
+    PUPIL = "ученик"
+
+    WITHOUT_ROLE = None
+    ALL_ROLES = [ADMIN, TEACHER, PUPIL]
 
     @staticmethod
-    def check_role_in_roles(role):
-        return role in UserRoles.ALL_ROLES
+    def get_title_all_roles():
+        return [role.title() for role in UserRoles.ALL_ROLES]
 
 
-UserRoles.ALL_ROLES = [k for k, v in vars(UserRoles).items() if not k.startswith("_")]
 FAKE_PASSWORD = "PASSWORD"
-
-
-class Role(SqlAlchemyBase):
-    __tablename__ = "roles"
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-
-    name = sqlalchemy.Column(sqlalchemy.String(20), nullable=False)
-
-    user_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
-    user = orm.relationship("User")
 
 
 class User(SqlAlchemyBase, UserMixin, SerializerMixin):
@@ -46,10 +46,13 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     about_user = sqlalchemy.Column(sqlalchemy.Text, default="Soon here will be information about me.")
     confident_info = sqlalchemy.Column(sqlalchemy.Text, default="")
 
-    teacher = orm.relationship("Teacher", uselist=False)
-    pupil = orm.relationship("Pupil", uselist=False)
+    teacher = orm.relationship("Teacher", lazy='joined', uselist=False, back_populates='user')
+    pupil = orm.relationship("Pupil", lazy='joined', uselist=False, back_populates='user')
+    admin = orm.relationship("Admin", lazy='joined', uselist=False, back_populates='user')
 
-    roles = orm.relationship("Role")
+    @property
+    def full_name(self):
+        return self.surname + " " + self.name
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
@@ -58,28 +61,34 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
         return check_password_hash(self.hashed_password, password)
 
     def check_role(self, check_role):
-        return any(check_role == role.name for role in self.roles)
+        return self.get_string_role().lower() == check_role
 
-    def get_string_roles(self):
-        return [role.name for role in self.roles]
-
-    def one_string_all_roles(self):
-        return ', '.join(self.get_string_roles())
-
-    @property
-    def full_name(self):
-        return self.surname + " " + self.name
+    @title_return_string
+    def get_string_role(self):
+        return UserRoles.ADMIN if self.is_admin else \
+            UserRoles.TEACHER if self.is_teacher else \
+                UserRoles.PUPIL if self.is_pupil else \
+                    UserRoles.WITHOUT_ROLE
 
     @property
     def is_admin(self):
-        return self.check_role(UserRoles.ADMIN)
+        return self.admin is not None
 
     @property
     def is_pupil(self):
-        return self.check_role(UserRoles.PUPIL)
+        return self.pupil is not None
 
     @property
     def is_teacher(self):
-        return self.check_role(UserRoles.TEACHER)
+        return self.teacher is not None
+
+    @property
+    def is_have_role(self):
+        return self.is_admin or self.is_teacher or self.is_pupil
 
 
+class Admin(SqlAlchemyBase):
+    __tablename__ = 'admins'
+
+    user_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"), primary_key=True)
+    user = orm.relationship("User", back_populates='admin')

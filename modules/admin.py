@@ -1,5 +1,5 @@
 from models import db_session
-from models.user import User, Role, UserRoles, FAKE_PASSWORD
+from models.user import User, Admin, UserRoles, FAKE_PASSWORD
 from models.teacher import Teacher
 from models.pupil import Pupil
 from models.subject import Subject
@@ -16,9 +16,9 @@ blueprint = bl_module.Blueprint("admin", __name__, template_folder="templates", 
 
 
 def user_serializer(user):
-    user_serialized = user.to_dict(rules=('-hashed_password', '-pupil', '-teacher', '-roles'))
+    user_serialized = user.to_dict(rules=('-hashed_password', '-pupil', '-teacher', '-admin'))
     user_serialized['password'] = FAKE_PASSWORD
-    user_serialized['roles'] = user.one_string_all_roles()
+    user_serialized['roles'] = user.get_string_role()
     return user_serialized
 
 
@@ -56,14 +56,22 @@ def teachers_table():
 
 @blueprint.route("/api_user", methods=["GET"])
 def get_users():
-    roles = request.args.get("role")
+    role = request.args.get("role", "").lower()
     session = db_session.create_session()
 
-    if roles is None:
+    role_in_query = None
+
+    if role == UserRoles.ADMIN:
+        role_in_query = Admin
+    elif role == UserRoles.TEACHER:
+        role_in_query = Teacher
+    elif role == UserRoles.PUPIL:
+        role_in_query = Pupil
+
+    if role_in_query is None:
         users = session.query(User)
     else:
-        roles = roles.strip().replace(", ", ",").upper().split(",")
-        users = session.query(User).join(Role).filter(Role.name.in_(roles))
+        users = session.query(User).join(role_in_query)
 
     users_serialized = list()
     for user in users:
@@ -156,35 +164,32 @@ def edit_user():
 def role_setter():
     session = db_session.create_session()
 
-    role_name = request.values["set_role"].upper()
     user_id = int(request.values["id"])
+    role_string = request.values["set_role"].lower()
 
-    if not UserRoles.check_role_in_roles(role_name):
+    if role_string not in UserRoles.ALL_ROLES:
         return jsonify({"error": "Такой роли нет"}), BadRequest.code
 
     user = session.query(User).get(user_id)
     if user is None:
         return jsonify({"error": "Пользователь с таким ID не найден"}), BadRequest.code
 
-    if user.check_role(role_name):
-        return jsonify({"error": "Пользователь уже имею данную роль"}), NotImplemented.code
+    if user.is_have_role:
+        return jsonify({
+            "error": f"Пользователь уже имеет роль '{user.get_string_role}', чтобы удалить роль войтиде в раздел для этой роли"}), NotImplemented.code
 
-    role = Role()
-    role.name = role_name
-    user.roles.append(role)
+    if role_string == UserRoles.ADMIN:
+        role = Admin()
+    elif role_string == UserRoles.TEACHER:
+        role = Teacher()
+    elif role_string == UserRoles.PUPIL:
+        role = Pupil()
 
-    if role_name == UserRoles.TEACHER:
-        teacher = Teacher()
-        user.teacher = teacher
-    elif role_name == UserRoles.PUPIL:
-        pupil = Pupil()
-        user.pupil = pupil
-
-    session.merge(user)
+    role.user = user
+    session.add(role)
     session.commit()
 
     return jsonify(user_serializer(user))
-
 
 @blueprint.route("/api_teacher")
 def get_teachers():
@@ -207,8 +212,15 @@ def edit_teacher_page(teacher_id):
 
     form = TeacherEditForm()
 
+    teacher = session.query(Teacher).get(teacher_id)
+    user = teacher.user
+
     subjects = session.query(Subject)
     groups = session.query(Group).filter(Group.teacher_id is None)
+
+    form.name.data = user.name
+    form.surname.data = user.surname
+    form.email.data = user.email
 
     form.subjects.choices = [(subject.id, subject.name) for subject in subjects]
     form.groups.choices = [(group.id, group.name) for group in groups]

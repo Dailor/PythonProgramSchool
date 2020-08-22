@@ -8,11 +8,11 @@ class Teacher(SqlAlchemyBase):
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
 
-    user_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
+    user_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'), unique=True)
 
-    user = orm.relationship("User")
+    user = orm.relationship("User", back_populates="teacher")
     subjects = orm.relationship("TeacherTeachesSubject", back_populates="teacher")
-    groups = orm.relationship("Group", back_populates="teacher")
+    groups = orm.relationship("Group", back_populates="teacher", lazy='joined')
 
     def get_string_groups(self):
         return [gr.name for gr in self.groups]
