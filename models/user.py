@@ -31,6 +31,8 @@ FAKE_PASSWORD = "PASSWORD"
 
 
 class User(SqlAlchemyBase, UserMixin, SerializerMixin):
+    serialize_rules = ('-hashed_password', '-pupil', '-teacher', '-admin', 'full_name')
+
     __tablename__ = "users"
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)

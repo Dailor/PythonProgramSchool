@@ -1,20 +1,32 @@
 url_api_user = '/admin/api_user';
-url_api_user_get_admin = url_api_user + "?role=ADMIN";
-url_set_role = url_api_user + '/set_role';
-
+url_set_role = url_api_user + '/role';
 
 admin_role = 'Админ';
 teacher_role = 'Учитель';
 pupil_role = 'Ученик';
 
+role_in_this_table = admin_role;
+
 dataSrc = 'users';
 
 
-var dataTable_users;
+var dataTable_admins;
 
 
 function string_in_quotes(str){
     return "'" + str + "'";
+}
+
+function error_ajax_crud(func_default, jqXHR, textStatus, errorThrown){
+    func_default(jqXHR, textStatus, errorThrown);
+    if('error' in jqXHR.responseJSON){
+        $(".modal-body").children(".alert").text(jqXHR.responseJSON.error).prepend(error_crud_msg);
+    }
+    else if('message' in jqXHR.responseJSON){
+        for(var key in jqXHR.responseJSON.message)
+        $(".modal-body").children(".alert").text(jqXHR.responseJSON.message[key]).prepend(error_crud_msg);
+    }
+
 }
 
 
@@ -43,28 +55,24 @@ columns = [{id: 'id',
             type: 'text',
             pattern:  "\\w+@[a-zA-Z]+?\\.[a-zA-Z]{2,6}",
             errorMsg: "*Неправильный формат почты",
-            hoverMsg: "Пример: test@exmple.com",
-            searchable: false} ,
+            hoverMsg: "Пример: test@exmple.com",},
 
             {id: 'confident_info',
             data:'confident_info',
             title: 'Личная информация',
             render: function(data, type, row){
                         return data.split("\n").join("<br/>");},
-            type: 'textarea'},
-            ];
+            type: 'textarea'}]
 
-buttons = [
-                {extend: 'selected',
-                 text: 'Удалить',
-                 title: 'Удалить',
-                 name: 'delete'},
 
-                {
-                text: 'Обновить',
-                name: 'refresh'
-                }
-                 ];
+var buttons = [{extend: 'selected',
+            text: 'Удалить',
+            title: 'Удалить',
+            name: 'delete'},
+
+            {text: 'Обновить',
+             name: 'refresh'
+                }];
 
 error_crud_msg = "<strong>Ошибка: </strong>"
 
@@ -98,6 +106,14 @@ language = {
       },
       "altEditor" : {
             "modalClose" : "Отмена",
+            "edit" : {
+                "title" : "Изменить",
+                "button" : "Изменить"
+            },
+            "add" : {
+                "title" : "Добавить пользователя",
+                "button" : "Создать"
+            },
             "delete" : {
                 "title" : "Удалить",
                 "button" : "Удалить"
@@ -114,10 +130,11 @@ language = {
 
 // Call the dataTables jQuery plugin
 $(document).ready(function() {
-  dataTable_users = $("#dataTable").DataTable({
+  dataTable_admins = $("#dataTable").DataTable({
         columns: columns,
         ajax: {
-            url: url_api_user_get_admin,
+            url: url_api_user,
+            data: {'role':  role_in_this_table},
             dataSrc: dataSrc
         },
         language: language,
@@ -127,16 +144,15 @@ $(document).ready(function() {
 
 
         onDeleteRow: function(datatable, rowdata, success, error) {
+            var data = {'id': rowdata.id,
+                    'role': role_in_this_table};
             $.ajax({
-                url: url_api_user,
+                url: url_set_role,
                 type: 'DELETE',
-                data: rowdata,
+                data: data,
                 success: success,
                 error: function(jqXHR, textStatus, errorThrown){
-                    error(jqXHR, textStatus, errorThrown);
-                    if('error' in jqXHR.responseJSON){
-                        $(".modal-body").children(".alert").text(jqXHR.responseJSON.error).prepend(error_crud_msg);
-                    }
+                    error_ajax_crud(error, jqXHR, textStatus, errorThrown);
                 },
             });
         },

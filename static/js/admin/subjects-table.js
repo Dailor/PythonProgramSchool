@@ -1,16 +1,14 @@
-url_api_teacher = '/admin/api_teacher';
-site_url = document.location.origin
-url_edit_teacher = site_url + '/admin/teachers/edit/'
-
-admin_role = 'Админ';
-teacher_role = 'Учитель';
-pupil_role = 'Ученик';
-
-dataSrc = 'teachers';
+url_api_subject = '/admin/api_subject';
 
 
-var dataTable_teacher;
+dataSrc = 'subjects';
 
+
+var dataTable_subjects;
+
+function wrap_in_tag(tag, string){
+    return `<${tag}>${string}</${tag}>`;
+}
 
 function string_in_quotes(str){
     return "'" + str + "'";
@@ -20,59 +18,56 @@ function string_in_quotes(str){
 columns = [{id: 'id',
             data: 'id',
             title: 'ID',
+            type: 'readonly',
             },
 
            {id: 'name',
+            required: true,
             data: 'name',
-            title: 'Имя',
-            type: 'text',},
-
-           {id: 'surname',
-            data: 'surname',
-            title: 'Фамилия',
+            title: 'Название',
             type: 'text'},
 
-           {id: 'email',
-            data: 'email',
-            title: 'Почта',
-            type: 'text',
-            },
+           {id: 'teachers',
+            data: 'teachers',
+            title: 'Учителя',
+            type: 'readonly',
+            render: function(data, type, row, meta){
+                var result = ''
+                for (index in data)
+                    result += wrap_in_tag('div', data[index]);
+                return result;}},
 
+           {id: 'groups',
+            data: 'groups',
+            title: 'Группы',
+            type: 'readonly',
+            render: function(data, type, row, meta){
+                var result = ''
+                for (index in data)
+                    result += wrap_in_tag('div', data[index]);
+                return result;
+            }
+            }
+           ];
 
-            { id: 'subjects',
-              data: 'subjects',
-              title: 'Предметы',
-              render: function(data, type, row){
-                        return data.split("\n").join("<br/>");},
-            },
+buttons = [{text: 'Добавить',
+                title: 'Добавить',
+                name: 'add'},
 
-            { id: 'groups',
-              data: 'groups',
-              title: 'Группы',
-              render: function(data, type, row){
-                        return data.split("\n").join("<br/>");},
-            },
-
-            {id: 'confident_info',
-            data:'confident_info',
-            title: 'Личная информация',
-            render: function(data, type, row){
-                        return data.split("\n").join("<br/>");},
-            type: 'textarea'},
-            ];
-
-buttons = [
+                {extend: 'selected',
+                 text: 'Изменить',
+                 title: 'Изменить',
+                 name: 'edit'},
 
                 {extend: 'selected',
                  text: 'Удалить',
                  title: 'Удалить',
                  name: 'delete'},
-
                 {
                 text: 'Обновить',
                 name: 'refresh'
                 }
-                ];
+                 ];
 
 error_crud_msg = "<strong>Ошибка: </strong>"
 
@@ -106,6 +101,14 @@ language = {
       },
       "altEditor" : {
             "modalClose" : "Отмена",
+            "edit" : {
+                "title" : "Изменить",
+                "button" : "Изменить"
+            },
+            "add" : {
+                "title" : "Добавить пользователя",
+                "button" : "Создать"
+            },
             "delete" : {
                 "title" : "Удалить",
                 "button" : "Удалить"
@@ -122,10 +125,10 @@ language = {
 
 // Call the dataTables jQuery plugin
 $(document).ready(function() {
-  dataTable_teacher = $("#dataTable").DataTable({
+  dataTable_subjects = $("#dataTable").DataTable({
         columns: columns,
         ajax: {
-            url: url_api_teacher,
+            url: url_api_subject,
             dataSrc: dataSrc
         },
         language: language,
@@ -133,21 +136,38 @@ $(document).ready(function() {
         altEditor : true,
         buttons: buttons,
 
-
+        onAddRow: function(datatable, rowdata, success, error) {
+            $.ajax({
+                url: url_api_subject,
+                type: 'PUT',
+                data: rowdata,
+                success: success,
+                error: function(jqXHR, textStatus, errorThrown){
+                    error_ajax_crud(error, jqXHR, textStatus, errorThrown);
+                },
+            });
+        },
         onDeleteRow: function(datatable, rowdata, success, error) {
             $.ajax({
-                url: url_api_user,
+                url: url_api_subject,
                 type: 'DELETE',
                 data: rowdata,
                 success: success,
                 error: function(jqXHR, textStatus, errorThrown){
-                    error(jqXHR, textStatus, errorThrown);
-                    if('error' in jqXHR.responseJSON){
-                        $(".modal-body").children(".alert").text(jqXHR.responseJSON.error).prepend(error_crud_msg);
-                    }
+                    error_ajax_crud(error, jqXHR, textStatus, errorThrown);
                 },
             });
         },
+        onEditRow: function(datatable, rowdata, success, error) {
+            $.ajax({
+                url: url_api_subject + '/' + rowdata.id,
+                type: 'POST',
+                data: rowdata,
+                success: success,
+                error: function(jqXHR, textStatus, errorThrown){
+                    error_ajax_crud(error, jqXHR, textStatus, errorThrown);
+                    }
+                })},
 
         dom:"<'row my-1'<'col-sm-6'B><'col-sm-6'f>>" +
             "<'row'<'col-sm-12'tr>>" +

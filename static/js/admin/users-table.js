@@ -1,5 +1,5 @@
 url_api_user = '/admin/api_user';
-url_set_role = url_api_user + '/set_role';
+url_set_role = url_api_user + '/role';
 
 
 admin_role = 'Админ';
@@ -11,23 +11,27 @@ roles_setter_btn_class = [[admin_role, 'btn-danger'], [teacher_role, 'btn-warnin
 dataSrc = 'users';
 
 
-
-
-test_data =  {
-      "confident_info": "test success",
-      "email": "admin@admin.com",
-      "id": 1,
-      "name": "1fgf",
-      "password": "1",
-      "roles": "ADMIN, TEACHER",
-      "surname": "Admin"
-    }
-
 var dataTable_users;
 
 
 function string_in_quotes(str){
     return "'" + str + "'";
+}
+
+function wrap_in_tag(tag, string){
+    return `<${tag}>${string}</${tag}>`;
+}
+
+function error_ajax_crud(func_default, jqXHR, textStatus, errorThrown){
+    func_default(jqXHR, textStatus, errorThrown);
+    if('error' in jqXHR.responseJSON){
+        $(".modal-body").children(".alert").text(jqXHR.responseJSON.error).prepend(error_crud_msg);
+    }
+    else if('message' in jqXHR.responseJSON){
+        for(var key in jqXHR.responseJSON.message)
+        $(".modal-body").children(".alert").text(jqXHR.responseJSON.message[key]).prepend(error_crud_msg);
+    }
+
 }
 
 function error_set_role(jqXHR, textStatus, errorThrown){
@@ -47,7 +51,7 @@ function success_set_role(data, textStatus, jqXHR){
 
 function set_role(role, user_id){
     data = {'id': user_id,
-            'set_role': role
+            'role': role
             }
 
     $.ajax({
@@ -72,7 +76,7 @@ columns = [{id: 'id',
             type: 'text'},
 
            {id: 'surname',
-            attr: {required: true},
+            required: true,
             data: 'surname',
             title: 'Фамилия',
             type: 'text'},
@@ -92,7 +96,7 @@ columns = [{id: 'id',
             type: 'readonly'},
 
             {id: 'set_role',
-            title: "Назначить роли",
+            title: "Назначить роль",
             type: 'readonly',
             render: function(data, type, row, meta){
                 var result = '';
@@ -100,8 +104,6 @@ columns = [{id: 'id',
                 if(row.roles != null){
                     return result;
                 }
-
-
 
                 var role_name;
                 var btn_type_class;
@@ -126,7 +128,13 @@ columns = [{id: 'id',
             data:'confident_info',
             title: 'Личная информация',
             render: function(data, type, row){
-                        return data.split("\n").join("<br/>");},
+                        var result = '';
+                        var text_rows = data.split("\n");
+
+                        for (var index in text_rows)
+                            result+= wrap_in_tag('div', text_rows[index]);
+
+                        return result;},
             type: 'textarea'},
 
             {id: 'password',
@@ -232,13 +240,9 @@ $(document).ready(function() {
                 data: rowdata,
                 success: success,
                 error: function(jqXHR, textStatus, errorThrown){
-                    error(jqXHR, textStatus, errorThrown);
-                    if('error' in jqXHR.responseJSON){
-                        $(".modal-body").children(".alert").text(jqXHR.responseJSON.error).prepend(error_crud_msg);
-                    }
+                    error_ajax_crud(error, jqXHR, textStatus, errorThrown);
                 },
             });
-
         },
         onDeleteRow: function(datatable, rowdata, success, error) {
             $.ajax({
@@ -247,27 +251,20 @@ $(document).ready(function() {
                 data: rowdata,
                 success: success,
                 error: function(jqXHR, textStatus, errorThrown){
-                    error(jqXHR, textStatus, errorThrown);
-                    if('error' in jqXHR.responseJSON){
-                        $(".modal-body").children(".alert").text(jqXHR.responseJSON.error).prepend(error_crud_msg);
-                    }
+                    error_ajax_crud(error, jqXHR, textStatus, errorThrown);
                 },
             });
         },
         onEditRow: function(datatable, rowdata, success, error) {
             $.ajax({
-                url: url_api_user,
+                url: url_api_user + '/' + rowdata.id,
                 type: 'POST',
                 data: rowdata,
                 success: success,
                 error: function(jqXHR, textStatus, errorThrown){
-                    error(jqXHR, textStatus, errorThrown);
-                    if('error' in jqXHR.responseJSON){
-                        $(".modal-body").children(".alert").text(jqXHR.responseJSON.error).prepend(error_crud_msg);
+                    error_ajax_crud(error, jqXHR, textStatus, errorThrown);
                     }
-                },
-            });
-        },
+                })},
 
         dom:"<'row my-1'<'col-sm-6'B><'col-sm-6'f>>" +
             "<'row'<'col-sm-12'tr>>" +
