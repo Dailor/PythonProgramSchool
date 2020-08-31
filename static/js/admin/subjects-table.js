@@ -14,6 +14,16 @@ function string_in_quotes(str){
     return "'" + str + "'";
 }
 
+function error_ajax_crud(func_default, jqXHR, textStatus, errorThrown){
+    func_default(jqXHR, textStatus, errorThrown);
+    if('error' in jqXHR.responseJSON){
+        $(".modal-body").children(".alert").text(jqXHR.responseJSON.error).prepend(error_crud_msg);
+    }
+    else if('message' in jqXHR.responseJSON){
+        for(var key in jqXHR.responseJSON.message)
+        $(".modal-body").children(".alert").text(jqXHR.responseJSON.message[key]).prepend(error_crud_msg);
+    }
+}
 
 columns = [{id: 'id',
             data: 'id',
@@ -28,7 +38,7 @@ columns = [{id: 'id',
             type: 'text'},
 
            {id: 'teachers',
-            data: 'teachers',
+            data: 'teachers_names',
             title: 'Учителя',
             type: 'readonly',
             render: function(data, type, row, meta){
@@ -38,7 +48,7 @@ columns = [{id: 'id',
                 return result;}},
 
            {id: 'groups',
-            data: 'groups',
+            data: 'groups_names',
             title: 'Группы',
             type: 'readonly',
             render: function(data, type, row, meta){
@@ -106,7 +116,7 @@ language = {
                 "button" : "Изменить"
             },
             "add" : {
-                "title" : "Добавить пользователя",
+                "title" : "Добавить предмет",
                 "button" : "Создать"
             },
             "delete" : {
@@ -149,7 +159,7 @@ $(document).ready(function() {
         },
         onDeleteRow: function(datatable, rowdata, success, error) {
             $.ajax({
-                url: url_api_subject,
+                url: url_api_subject + '/' + rowdata.id,
                 type: 'DELETE',
                 data: rowdata,
                 success: success,

@@ -22,15 +22,7 @@ class GroupListResource(Resource):
 
         groups = session.query(Group).all()
 
-        return jsonify({'groups': [self.group_serializer(group) for group in groups]})
-
-    @staticmethod
-    def group_serializer(group):
-        group_serialized = group.to_dict()
-        group_serialized['subject'] = group.subject.name
-        group_serialized['teacher'] = group.teacher.user.full_name
-        group_serialized['topics'] = [topic.name for topic in group.topics]
-        return group_serialized
+        return jsonify({'groups': [group.to_dict() for group in groups]})
 
     def put(self):
         args = parser.parse_args()
@@ -53,6 +45,7 @@ class GroupListResource(Resource):
         group = Group()
         group.name = args['name']
         group.teacher = teacher
+        group.is_active = args['is_active']
 
         if teacher not in subject.teachers:
             subject.teachers.append(teacher)
@@ -62,10 +55,18 @@ class GroupListResource(Resource):
         session.merge(subject)
         session.commit()
 
-        return self.group_serializer(group)
+        return jsonify(group.to_dict())
 
 
 class GroupResource(Resource):
+    def get(self, group_id):
+        check_group_by_id(group_id)
+
+        session = db_session.create_session()
+        group = session.query(Group).get(group_id)
+
+        return jsonify(group.to_dict(rules=('pupils', )))
+
     def post(self, group_id):
         check_group_by_id(group_id)
 
@@ -89,6 +90,7 @@ class GroupResource(Resource):
             abort(403, error="Группа с таким именем уже существует")
 
         group.name = args['name']
+        group.is_active = args['is_active']
         group.teacher = teacher
 
         if teacher not in subject.teachers:
@@ -100,4 +102,26 @@ class GroupResource(Resource):
         session.merge(subject)
         session.commit()
 
-        return GroupListResource.group_serializer(group)
+        return jsonify(group.to_dict())
+
+    def delete(self, group_id):
+        check_group_by_id(group_id)
+
+        session = db_session.create_session()
+        group = session.query(Group).get(group_id)
+        session.delete(group)
+        session.commit()
+        return jsonify({'success': 'success'})
+
+
+class GroupsToDict(Resource):
+    def get(self):
+        return jsonify(self.get_groups_dict())
+
+    def get_groups_dict(self):
+        session = db_session.create_session()
+
+        groups = dict()
+        for group in session.query(Group).all():
+            groups[group.id] = group.name
+        return groups

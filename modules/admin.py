@@ -1,7 +1,11 @@
+from models import db_session
+
 from api.user.user_resource import UserListResource, UserResource, RoleSetterResource
-from api.group.group_resource import GroupListResource, GroupResource
-from api.teacher.teacher_resource import TeacherListResource, TeacherDictIdToFullName
-from api.subject.subject_resource import SubjectListResource, SubjectDictIdToName
+from api.group.group_resource import GroupListResource, GroupResource, GroupsToDict
+from api.teacher.teacher_resource import TeacherListResource, TeacherDictIdToFullName, TeacherResource
+from api.pupils.pupil_resource import PupilListResource, PupilResource
+from api.subject.subject_resource import SubjectListResource, SubjectDictIdToName, SubjectResource
+from api.topics.topic_resource import TopicListResource, TopicResource
 
 from flask import blueprints as bl_module
 from flask import render_template, redirect, abort, jsonify, request
@@ -16,14 +20,20 @@ api.add_resource(UserListResource, '/api_user')
 api.add_resource(UserResource, '/api_user/<int:user_id>')
 api.add_resource(RoleSetterResource, '/api_user/role')
 
-api.add_resource(GroupListResource, '/api_group')
 api.add_resource(GroupResource, '/api_group/<int:group_id>')
+api.add_resource(GroupListResource, '/api_group')
 
+api.add_resource(TeacherResource, '/api_teacher/<int:teacher_id>')
 api.add_resource(TeacherListResource, '/api_teacher')
-api.add_resource(TeacherDictIdToFullName, '/api_teacher/get_dict')
 
+api.add_resource(PupilResource, '/api_pupil/<int:pupil_id>')
+api.add_resource(PupilListResource, '/api_pupil')
+
+api.add_resource(SubjectResource, '/api_subject/<int:subject_id>')
 api.add_resource(SubjectListResource, '/api_subject')
-api.add_resource(SubjectDictIdToName, '/api_subject/get_dict')
+
+api.add_resource(TopicListResource, '/api_topic')
+api.add_resource(TopicResource, '/api_topic/<int:topic_id>')
 
 
 @blueprint.before_request
@@ -49,6 +59,12 @@ def teachers_table():
     return render_template("admin/teachers.html")
 
 
+@blueprint.route('/pupils')
+def pupils_table():
+    groups_dict = GroupsToDict().get_groups_dict()
+    return render_template("admin/pupils.html", groups_dict=groups_dict)
+
+
 @blueprint.route('/subjects')
 def subjects_table():
     return render_template("admin/subjects.html")
@@ -56,4 +72,13 @@ def subjects_table():
 
 @blueprint.route('/groups')
 def groups_table():
-    return render_template("admin/groups.html")
+    teachers_dict = TeacherDictIdToFullName().teachers_dict()
+    subjects_dict = SubjectDictIdToName().subjects_dict()
+    return render_template("admin/groups.html", teachers_dict=teachers_dict, subjects_dict=subjects_dict)
+
+
+@blueprint.route('/topics')
+def topics_table():
+    teachers_dict = TeacherDictIdToFullName().teachers_dict()
+    groups_dict = GroupsToDict().get_groups_dict()
+    return render_template("admin/topics.html", teachers_dict=teachers_dict, groups_dict=groups_dict)

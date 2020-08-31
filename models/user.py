@@ -1,9 +1,12 @@
 import sqlalchemy
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import orm
 from sqlalchemy_serializer import SerializerMixin
 from werkzeug.security import check_password_hash, generate_password_hash
+from itsdangerous import URLSafeSerializer
 from flask_login import UserMixin
 from .db_session import SqlAlchemyBase
+from config_app import BaseConfig
 
 
 def title_return_string(func):
@@ -12,6 +15,9 @@ def title_return_string(func):
         return func_result.title() if isinstance(func_result, str) else func_result
 
     return wrapper
+
+
+url_serializer = URLSafeSerializer(BaseConfig.SECRET_KEY)
 
 
 class UserRoles:
@@ -31,17 +37,19 @@ FAKE_PASSWORD = "PASSWORD"
 
 
 class User(SqlAlchemyBase, UserMixin, SerializerMixin):
-    serialize_rules = ('-hashed_password', '-pupil', '-teacher', '-admin', 'full_name')
+    serialize_rules = (
+        '-hashed_password', '-_email', '-pupil', '-teacher', '-admin', 'email', 'full_name', '-session_id')
 
     __tablename__ = "users"
 
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
+    session_id = sqlalchemy.Column(sqlalchemy.String(255), index=True, unique=True)
 
     name = sqlalchemy.Column(sqlalchemy.String(30), nullable=False)
     surname = sqlalchemy.Column(sqlalchemy.String(30), nullable=False)
 
-    email = sqlalchemy.Column(sqlalchemy.String(255),
-                              nullable=False, index=True, unique=True)
+    _email = sqlalchemy.Column(sqlalchemy.String(255),
+                               nullable=False, index=True, unique=True)
 
     hashed_password = sqlalchemy.Column(sqlalchemy.String(150), nullable=False)
 
@@ -52,12 +60,27 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     pupil = orm.relationship("Pupil", lazy='joined', uselist=False, back_populates='user')
     admin = orm.relationship("Admin", lazy='joined', uselist=False, back_populates='user')
 
+    def get_id(self):
+        return str(self.session_id)
+
     @property
     def full_name(self):
         return self.surname + " " + self.name
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
+        if self.email is not None:
+            self.session_id = url_serializer.dumps([self.email, self.hashed_password])
+
+    @hybrid_property
+    def email(self):
+        return self._email
+
+    @email.setter
+    def email(self, email):
+        self._email = email
+        if self.hashed_password is not None:
+            self.session_id = url_serializer.dumps([self.email, self.hashed_password])
 
     def check_password(self, password):
         return check_password_hash(self.hashed_password, password)

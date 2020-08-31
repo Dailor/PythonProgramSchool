@@ -1,14 +1,17 @@
-<hr class="sidebar-divider my-0">
+<hr class="sidebar-divider">
+
 <div class="sidebar-heading">
     Учитель
 </div>
+
 <li class="nav-item">
-    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages" aria-expanded="false"
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseGroups" aria-expanded="false"
        aria-controls="collapsePages">
         <i class="fas fa-fw"></i>
         <span>Группы</span>
     </a>
-    <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar" style="">
+
+    <div id="collapseGroups" class="collapse" aria-labelledby="headingGroups" data-parent="#accordionSidebar" style="">
         <div class="bg-white py-2 collapse-inner rounded">
             {% for group in current_user.teacher.groups if group.is_active%}
             <a class="collapse-item" href="/teacher/groups/{{group.id}}">{{group.name}}</a>
@@ -16,8 +19,18 @@
         </div>
     </div>
 </li>
+
 <li class="nav-item">
-    <a class="nav-link" href="/teacher/pupils/">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTopics" aria-expanded="false"
+       aria-controls="collapseTopics">
         <i class="fas fa-fw"></i>
-        <span>Ученики</span></a>
+        <span>Категории</span>
+    </a>
+    <div id="collapseTopics" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar" style="">
+        <div class="bg-white py-2 collapse-inner rounded">
+            {% for topic in current_user.teacher.topics%}
+            <a class="collapse-item" href="/teacher/topics/{{topic.id}}">{{topic.name}}</a>
+            {% endfor %}
+        </div>
+    </div>
 </li>

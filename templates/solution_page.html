@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{task.name}}{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{{url_for('static', filename='vendor/codemirror/lib/codemirror.css')}}">
+<link rel="stylesheet" href="{{url_for('static', filename='vendor/codemirror/theme/neat.css')}}">
+<link href="{{url_for('static', filename='css/lessons_available.css')}}" rel="stylesheet">
+{% endblock %}
+
+{% block javascript %}
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type="text/javascript" async
+        src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML"></script>
+
+<script src="{{url_for('static', filename='vendor/codemirror/lib/codemirror.js')}}"></script>
+<script src="{{url_for('static', filename='vendor/codemirror/mode/python/python.js')}}"></script>
+<!--<script src="{{url_for('static', filename='vendor/codemirror/mode/clike/clike.js')}}"></script>-->
+
+<script>
+task_id = {{task.id}};
+group_id = {{group_id}};
+
+{% if solution %}
+    task_solution = {{solution.to_dict()|tojson}};
+{% else %}
+    task_solution = null;
+{% endif %}
+
+</script>
+
+<script src="{{url_for('static', filename='js/task_solution.js')}}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header"><h3 id="taskName" class="m-0 font-weight-bold text-info">{{task.name}}</h3>
+    </div>
+    <div class="card-body">
+        <div>
+            <div>
+                <div>
+                    <h4>Описание</h4>
+                    <p class="my-2" id="taskDescription">{{task.description|safe}}</p>
+                </div>
+                <div class="my-4">
+                    <h4>Примеры: </h4>
+                    <table border="1" class="w-100">
+                        <thead>
+                        <tr>
+                            <th class="w-50">Входные данные</th>
+                            <th class="w-50">Выходные данные</th>
+                        </tr>
+                        </thead>
+                        <tbody id="dataExamples">
+                        <tr class="rowExample">
+                            <td class="p-0 dataIn">{{task.in_data}}</td>
+                            <td class="p-0 dataOut">{{task.out_data}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4">
+                    <h4>Решение</h4>
+                    <div class="mr-2 mt-2" id="codeMirror"></div>
+
+                    {% if solution %}
+                    {% set solution_msg_and_selector = ({true: ['success', 'Принят'], false: ['danger', 'Отклонен'],
+                    none: ['warning', 'На рассмотрении']}) %}
+                    {% if current_user.is_teacher %}
+                    <h4 class="my-4">Отправил: {{solution.pupil.user.full_name}}</h4>
+                    {% endif %}
+                    <h4 class="my-3">Решение: <span
+                            class="text-{{solution_msg_and_selector[solution.review_status][0]}}">{{solution_msg_and_selector[solution.review_status][1]}}</span>
+                    </h4>
+                    {% endif %}
+
+                    {% if current_user.is_pupil %}
+                    <button id="sendSolution" class="btn btn-primary my-3" onclick="send_solution()">Отправить</button>
+                    {% else %}
+                    <div>
+                        <a id="acceptSolution" class="btn btn-success my-3" href="{{solution.id}}/accept">Принять
+                        </a>
+                        <a id="cancelSolution" class="btn btn-danger my-3" href="{{solution.id}}/decline">Отклонить
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

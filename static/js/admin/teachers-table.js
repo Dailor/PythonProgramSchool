@@ -136,7 +136,7 @@ $(document).ready(function() {
 
         onDeleteRow: function(datatable, rowdata, success, error) {
             $.ajax({
-                url: url_api_user,
+                url: url_api_teacher + '/' + rowdata.id,
                 type: 'DELETE',
                 data: rowdata,
                 success: success,

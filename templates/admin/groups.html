@@ -29,6 +29,11 @@
 <script src="{{ url_for('static', filename='vendor/datatables.altEditor.free/dataTables.altEditor.free.js') }}"></script>
 
 <!--JS код для этой страницы-->
+<script>
+var teachers_dict = {{teachers_dict|tojson}};
+var subjects_dict = {{subjects_dict|tojson}};
+</script>
+
 <script src="{{ url_for('static', filename='js/admin/groups-table.js') }}"></script>
 {% endblock %}
 

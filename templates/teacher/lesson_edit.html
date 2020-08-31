@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{topic_name}}{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block javascript %}
+
+
+<!--JS код для этой страницы-->
+<script>
+    topic_id = {{topic_id}};
+    http_request_type = '{{http_request_type}}';
+
+    {% if lesson %}
+        lesson = {{lesson|tojson}};
+    {% else %}
+        lesson = undefined;
+    {% endif %}
+
+
+</script>
+
+<script src="{{ url_for('static', filename='vendor/ckeditor/ckeditor.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/teacher/lesson_edit.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<h3 class="h3 mb-3 text-gray-800">{{page_type}} урок.</h3>
+<form onsubmit="return send_data()">
+    <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h4 class="m-0 font-weight-bold text-primary">Основные Данные урока</h4>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="lessonName">Название урока</label>
+                    <input name="lessonName" type="text" class="form-control" id="lessonName" required>
+                </div>
+            </div>
+    </div>
+
+    <div id="tasks"></div>
+
+    <div class="d-flex justify-content-between mb-3">
+        <button type="button" class="btn btn-secondary" onclick="add_new_task()">Добавить задачу</button>
+        <input type="submit" class="btn btn-success">
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{pupil.user.full_name}}{% endblock %}
+
+{% block style %}
+
+{% endblock %}
+
+{% block javascript %}
+
+<script src="{{url_for('static', filename='/vendor/chart.js/Chart.min.js')}}"></script>
+
+<script>
+    statistic_for_topics = {{ statistic_for_topics|tojson }}
+</script>
+<script src="{{url_for('static', filename='/js/profile_page.js')}}"></script>
+{% endblock %}
+
+{% block content_class%}ml-1{% endblock %}
+
+{% block content %}
+<h1>Профиль</h1>
+<div class="statistic mt-4">
+    {% for topic_id in statistic_for_topics %}
+    {% set charts_on_row = 4 %}
+    {% if loop.index0 % charts_on_row == 0 %}
+    <div class="row">
+    {% endif %}
+        <div class="col-xl-3 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">{{ statistic_for_topics[topic_id]['topic_name'] }}</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4">
+                        <canvas id="statistic{{ topic_id }}"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% if loop.index0 % charts_on_row + 1 == charts_on_row %}
+    </div>
+    {% endif %}
+    {% endfor %}
+
+    {% if statistic_for_topics | length + 1 != charts_on_row%}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

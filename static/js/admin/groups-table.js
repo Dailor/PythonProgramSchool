@@ -1,12 +1,10 @@
 var url_api_groups = '/admin/api_group';
 var url_api_get_teachers_dict = '/admin/api_teacher/get_dict';
 var url_api_get_subjects_dict = '/admin/api_subject/get_dict';
-var teachers_dict;
-var subjects_dict;
-var active_status_dict = {true:'Обучается',
-                          false: 'Закончен'};
+var active_status_dict = {1:'Обучается',
+                          0: 'Закончен'};
 
-var dataTable_users;
+var dataTable_groups;
 var dataSrc = 'groups';
 
 function wrap_in_tag(tag, string){
@@ -43,9 +41,6 @@ function error_ajax_crud(func_default, jqXHR, textStatus, errorThrown){
     }
 }
 
-get_dict_from_api(url_api_get_teachers_dict);
-get_dict_from_api(url_api_get_subjects_dict);
-
 columns = [{id: 'id',
             data: 'id',
             title: 'ID',
@@ -63,36 +58,45 @@ columns = [{id: 'id',
             data: 'is_active',
             title: 'Статус',
             type: 'select',
+
             options: active_status_dict,
             render: function(data, type, row, meta){
-                return active_status_dict[row.is_active];
-
+                        row.is_active = data + 0;
+                        if (data == null || row == null) return null;
+                        return active_status_dict[row.is_active];
+                    }
             },
-            },
 
-           {id: 'subject',
+           {id: 'subject_id',
             required: true,
-            data: 'subject',
+            data: 'subject_id',
             title: 'Предметы',
             type: 'select',
-            options: subjects_dict
+            options: subjects_dict,
+            render: function(data, type, row, meta){
+                        if (data == null || row == null) return null;
+                        return subjects_dict[data];
+                    }
             },
 
-           {id: 'teacher',
-            data: 'teacher',
+           {id: 'teacher_id',
+            data: 'teacher_id',
             title: 'Учитель',
             type: 'select',
-            options: teachers_dict},
+            options: teachers_dict,
+            render: function(data, type, row, meta){
+                        if (data == null || row == null) return null;
+                        return teachers_dict[data];
+                    }
+            },
 
             {id: 'topics',
-            data: 'topics',
+            data: 'topics_list',
             title: "Категории",
             type: 'readonly',
             render: function(data, type, row, meta){
-                        var result = ''
-                        for (var topic in row.topics)
-                            result += wrap_in_tag('div', row.topics[topic]);
-                        return result;
+                        if (data == null || row == null) return null;
+                        return data.map(name => wrap_in_tag('div', name)).join('\n');
             }}];
 
 buttons = [{text: 'Добавить',
@@ -151,7 +155,7 @@ language = {
                 "button" : "Изменить"
             },
             "add" : {
-                "title" : "Добавить пользователя",
+                "title" : "Добавить группу",
                 "button" : "Создать"
             },
             "delete" : {
@@ -182,14 +186,10 @@ $(document).ready(function() {
         buttons: buttons,
 
         onAddRow: function(datatable, rowdata, success, error) {
-            var data = {'subject_id': rowdata.subject,
-                        'teacher_id': rowdata.teacher,
-                         'name': rowdata.name,
-                         'is_active': rowdata.is_active};
             $.ajax({
                 url: url_api_groups,
                 type: 'PUT',
-                data: data,
+                data: rowdata,
                 success: success,
                 error: function(jqXHR, textStatus, errorThrown){
                     error_ajax_crud(error, jqXHR, textStatus, errorThrown);
@@ -198,14 +198,10 @@ $(document).ready(function() {
         },
 
         onEditRow: function(datatable, rowdata, success, error) {
-            var data = {'subject_id': rowdata.subject,
-                        'teacher_id': rowdata.teacher,
-                         'name': rowdata.name,
-                         'is_active': rowdata.is_active};
             $.ajax({
                 url: url_api_groups + '/' + rowdata.id,
                 type: 'POST',
-                data: data,
+                data: rowdata,
                 success: success,
                 error: function(jqXHR, textStatus, errorThrown){
                     error_ajax_crud(error, jqXHR, textStatus, errorThrown);

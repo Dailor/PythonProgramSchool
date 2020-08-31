@@ -5,6 +5,13 @@ from models.teacher import Teacher
 from api.user.user_resource import user_serializer
 
 
+def check_teacher_by_id(teacher_id):
+    session = db_session.create_session()
+    teacher = session.query(Teacher).get(teacher_id)
+    if teacher is None:
+        abort(404, f'Учитель с {teacher_id} ID не найден')
+
+
 def teacher_serializer(teacher):
     teacher_serialized = user_serializer(teacher.user)
     teacher_serialized['id'] = teacher.id
@@ -23,10 +30,22 @@ class TeacherListResource(Resource):
         return jsonify({"teachers": teachers_to_users})
 
 
+class TeacherResource(Resource):
+    def delete(self, teacher_id):
+        check_teacher_by_id(teacher_id)
+
+        session = db_session.create_session()
+        teacher = session.query(Teacher).get(teacher_id)
+        session.delete(teacher)
+        session.commit()
+        return jsonify({'success': 'success'})
+
+
 class TeacherDictIdToFullName(Resource):
     def get(self):
+        return jsonify(self.teachers_dict())
+
+    def teachers_dict(self):
         session = db_session.create_session()
         teachers = session.query(Teacher)
-        return jsonify({
-            teacher.id: teacher.user.full_name for teacher in teachers
-        })
+        return {teacher.id: teacher.user.full_name for teacher in teachers}
