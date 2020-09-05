@@ -28,7 +28,7 @@ columns = [{id: 'id',
             {id: 'profile_url',
             title: 'Действия',
             render: function(data, type, row, meta){
-                return `<a href='/groups/${group_id}/pupils/${row.id}'>Перейти в профиль</a>`;
+                return `<a href='/pupils/${row.id}'>Перейти в профиль</a>`;
             }}
         ];
 

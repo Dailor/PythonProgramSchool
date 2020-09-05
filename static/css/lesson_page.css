@@ -1,0 +1,27 @@
+.card-header:hover {
+    cursor: pointer;
+}
+
+.lesson_available_switcher {
+    cursor: pointer;
+}
+
+.dataIn, .dataOut{
+    white-space:pre;
+    vertical-align: top;
+    text-align: left;
+}
+
+.task-results a {
+    color: #858796; /* Цвет обычной ссылки */
+    text-decoration: none; /* Убираем подчеркивание у ссылок */
+}
+
+.task-results a:visited {
+    color: #858796; /* Цвет посещённой ссылки */
+}
+
+.task-results a:hover {
+    color: #858796;
+    text-decoration: none; /* Добавляем подчеркивание */
+}

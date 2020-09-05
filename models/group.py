@@ -11,7 +11,7 @@ pupils_groups = sqlalchemy.Table('pupils_to_groups', SqlAlchemyBase.metadata,
 
 
 class Group(SqlAlchemyBase, SerializerMixin):
-    serialize_rules = ('-pupils', '-topics', 'topics_list')
+    serialize_rules = ('-pupils', '-topics', '-solutions', 'topics_list')
 
     __tablename__ = "groups"
 
@@ -24,12 +24,12 @@ class Group(SqlAlchemyBase, SerializerMixin):
 
     subject = orm.relationship("Subject", uselist=False, back_populates="groups")
     teacher = orm.relationship("Teacher", uselist=False, back_populates="groups")
-    pupils = orm.relationship("Pupil", secondary='pupils_to_groups', back_populates="groups")
+    pupils = orm.relationship("Pupil", secondary='pupils_to_groups', back_populates="groups", lazy='joined')
 
     topics = orm.relationship("Topic", secondary='group_to_topic', back_populates='groups')
     lessons = orm.relationship("Lesson", secondary='lesson_to_group', back_populates='groups')
+    solutions = orm.relationship("Solutions", back_populates='group')
 
     @property
     def topics_list(self):
         return [topic.name for topic in self.topics]
-

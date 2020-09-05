@@ -1,25 +1,29 @@
 import config_app
 from models import db_session
-from models.group import Group
-from models.lesson import Lesson
 from models.pupil import Pupil
-from models.task import Task, Solutions, TaskCheckStatus
-from models.topic import Topic
+from models.task import TaskCheckStatus
+
+from models.queries.queries import tasks_count_of_pupils_for_topic
 
 from modules import admin, teacher, pupil
 
-from models.user import User, Admin, UserRoles
+from models.user import User, Admin
 from forms.login import LoginForm, LoginAnswers
-from flask import Flask, render_template, request, redirect, flash
+from flask import Flask, render_template, redirect, abort
 from flask_login import login_user, logout_user, current_user, login_required
 from flask_login.login_manager import LoginManager
 
-from sqlalchemy import func, distinct, and_
+from itertools import groupby
 
 app = Flask(__name__)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db_session.__factory.remove()
 
 
 @login_manager.unauthorized_handler
@@ -69,52 +73,56 @@ def index():
     return render_template("index.html")
 
 
-def tasks_count_of_pupils_for_topic(session, group_id, pupil_id, solution_status):
-    query = session.query(Topic.id, Topic.name, func.count(distinct(Task.id))).select_from(Group)
-    query = query.join(Group.topics)
-    query = query.join(Lesson, Lesson.topic_id == Topic.id)
-    query = query.join(Task, Task.lesson_id == Lesson.id)
-    query = query.outerjoin(Solutions,
-                            and_(Solutions.task_id == Task.id,
-                                 Solutions.pupil_id == pupil_id,
-                                 Solutions.group_id == group_id))
-    if solution_status is TaskCheckStatus.ACCESS:
-        query = query.filter(Solutions.review_status.is_(TaskCheckStatus.ACCESS))
-    else:
-        query = query.filter(Solutions.review_status.isnot(TaskCheckStatus.ACCESS))
-    query = query.group_by(Topic.name, Topic.id)
-    return query.all()
+@app.route('/pupils/<int:pupil_id>')
+def pupil_profile(pupil_id):
+    if not (current_user.is_pupil is False or (current_user.is_pupil and pupil_id == current_user.pupil.id)):
+        abort(403)
 
-
-@app.route('/groups/<int:group_id>/pupils/<int:pupil_id>')
-def pupil_profile(group_id, pupil_id):
     session = db_session.create_session()
 
     pupil = session.query(Pupil).get(pupil_id)
 
-    tasks_success_count_of_pupil_for_topics = tasks_count_of_pupils_for_topic(session, group_id, pupil_id,
-                                                                              TaskCheckStatus.ACCESS)
+    # Group.id, Topic.id, Group.name, Topic.name, func.count(distinct(Task.id)), solution_status
+    tasks_success_count_of_pupil_for_topics = tasks_count_of_pupils_for_topic(pupil_id=pupil_id,
+                                                                              solution_status=TaskCheckStatus.ACCESS)
 
-    tasks_unsolved_count_of_pupil_for_topics = tasks_count_of_pupils_for_topic(session, group_id, pupil_id, None)
+    tasks_unsolved_count_of_pupil_for_topics = tasks_count_of_pupils_for_topic(pupil_id=pupil_id,
+                                                                               solution_status=None)
 
-    statistic_solved_and_unsolved_task_by_pupil_for_group = dict()
+    statistic_solved_and_unsolved_task_for_group_of_pupil = dict()
 
-    for topic_id, topic_name, tasks_count in tasks_success_count_of_pupil_for_topics:
-        statistic_solved_and_unsolved_task_by_pupil_for_group[topic_id] = {'topic_name': topic_name,
-                                                                           'solved': tasks_count,
-                                                                           'unsolved': 0}
+    for (group_id, topic_id), topic_statistic in groupby(
+            tasks_success_count_of_pupil_for_topics + tasks_unsolved_count_of_pupil_for_topics, lambda x: (x[0], x[1])):
 
-    for topic_id, topic_name, tasks_count in tasks_unsolved_count_of_pupil_for_topics:
-        statistic_for_topic = statistic_solved_and_unsolved_task_by_pupil_for_group.get(topic_id,
-                                                                                        {'topic_name': topic_name,
-                                                                                         'solved': 0})
-        statistic_for_topic['unsolved'] = tasks_count
+        topic_statistic = list(topic_statistic)
 
-        statistic_solved_and_unsolved_task_by_pupil_for_group[topic_id] = statistic_for_topic
+        group_name = topic_statistic[0][2]
+        topic_name = topic_statistic[0][3]
+
+        if len(topic_statistic) == 2:
+            if topic_statistic[0][-1] is TaskCheckStatus.ACCESS:
+                topic_solved_count, topic_unsolved_count = topic_statistic[0][4], topic_statistic[1][4]
+            else:
+                topic_unsolved_count, topic_solved_count = topic_statistic[1][4], topic_statistic[0][4]
+        else:
+            if topic_statistic[0][-1] is TaskCheckStatus.ACCESS:
+                topic_solved_count, topic_unsolved_count = topic_statistic[0][4], 0
+            else:
+                topic_solved_count, topic_unsolved_count = 0, topic_statistic[0][4]
+
+        topic_statistic_dict = {'topic_name': topic_name,
+                                'solved': topic_solved_count,
+                                'unsolved': topic_unsolved_count}
+
+        if group_id not in statistic_solved_and_unsolved_task_for_group_of_pupil:
+            statistic_solved_and_unsolved_task_for_group_of_pupil[group_id] = {'group_name': group_name,
+                                                                               'topics': {
+                                                                                   topic_id: topic_statistic_dict}}
+        else:
+            statistic_solved_and_unsolved_task_for_group_of_pupil[group_id]['topics'][topic_id] = topic_statistic_dict
 
     return render_template('pupil_profile.html', pupil=pupil,
-                           statistic_for_topics=statistic_solved_and_unsolved_task_by_pupil_for_group)
-
+                           statistic_for_group=statistic_solved_and_unsolved_task_for_group_of_pupil)
 
 
 def add_default_admin():
@@ -137,7 +145,7 @@ def add_default_admin():
     session.commit()
 
 
-def blueprint_routes():
+def blueprint_routes_register():
     app.register_blueprint(admin.blueprint, url_prefix="/admin")
     app.register_blueprint(teacher.blueprint, url_prefix='/teacher')
     app.register_blueprint(pupil.blueprint, url_prefix='/pupil')
@@ -147,5 +155,5 @@ if __name__ == '__main__':
     app.config.from_object(config_app.DevelopmentConfig)
     db_session.global_init(debug=app.config["DEBUG"])
     add_default_admin()
-    blueprint_routes()
+    blueprint_routes_register()
     app.run(host=app.config["HOST"], port=app.config["PORT"])

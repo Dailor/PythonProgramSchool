@@ -2,7 +2,7 @@
 {% block title %}{{lesson.name}}{% endblock %}
 
 {% block style %}
-<link href="{{url_for('static', filename='css/lesson_page.css')}}" rel="stylesheet">
+<link href="{{url_for('static', filename='css/lesson_page.css', version=1)}}" rel="stylesheet">
 {% endblock %}
 
 {% block javascript %}
@@ -16,7 +16,7 @@
         lesson = {{lesson.to_dict()|tojson}};
 
 </script>
-<script src="{{ url_for('static', filename='js/teacher/lessons_page.js') }}"></script>
+<script src="{{ url_for('static', filename='js/teacher/lessons_page.js', version=1) }}"></script>
 {% endif %}
 
 {% endblock %}

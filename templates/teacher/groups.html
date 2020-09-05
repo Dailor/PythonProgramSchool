@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{group_name}}{% endblock %}
+
+{% block style %}
+<link href="{{url_for('static', filename='vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
+{% endblock %}
+
+{% block javascript %}
+
+<script>
+    groups = {{ groups|tojson }}
+
+
+
+</script>
+<script src="{{ url_for('static', filename='js/teacher/groups.js', version=1) }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="mx-3">
+    <div class="row">
+        <div class="mb-4 col-lg-8 px-0">
+            <div class="card shadow ">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Группы</h6>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group-flush p-0">
+                        {% for group_id in groups %}
+                        {% set group = groups[group_id] %}
+                        <li class="list-group-item d-flex justify-content-between cursor-pointer" onclick="show_pupil({{group_id}})">
+                            <a class="nav-link p-0" href="/teacher/groups/{{group_id}}/lessons">{{group['name']}}</a>
+                            <span class="fas fa-circle get-pupils"></span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col"></div>
+        <div class="col-sm-3">
+            <div class="card shadow mb-4 px-0">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Ученики</h6>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group-flush p-0" id="pupils">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -60,5 +60,6 @@ class Solutions(SqlAlchemyBase, SerializerMixin):
     review_status = sqlalchemy.Column(sqlalchemy.Boolean)
 
     pupil = orm.relationship("Pupil", back_populates='solutions', lazy='joined')
+    group = orm.relationship("Group", back_populates='solutions', lazy='joined')
     task = orm.relationship("Task")
 

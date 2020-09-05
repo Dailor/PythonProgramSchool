@@ -1,9 +1,9 @@
 from models import db_session
+from models.queries.queries import tasks_count_of_pupils_for_topic
 from models.group import Group
 from models.topic import Topic
 from models.lesson import Lesson
-from models.task import Solutions, TaskCheckStatus, Task
-from models.pupil import Pupil
+from models.task import Solutions, TaskCheckStatus
 
 from api.group.group_resource import GroupResource, check_group_by_id
 from api.lessons.lesson_resource import LessonsListResource, LessonResource, LessonAvailableListResource, \
@@ -14,8 +14,6 @@ from flask import render_template, redirect, abort
 from flask.blueprints import Blueprint
 from flask_login import current_user
 from flask_restful import Api
-
-from sqlalchemy import func, distinct, and_
 
 blueprint = Blueprint('teacher', __name__, template_folder="templates", static_folder="static")
 api = Api(blueprint)
@@ -144,3 +142,10 @@ def accept_solution(group_id, lesson_id, solution_id):
 def decline_solution(group_id, lesson_id, solution_id):
     set_solution_status(solution_id, TaskCheckStatus.FAILED)
     return redirect(f'/teacher/groups/{group_id}/lessons/{lesson_id}')
+
+
+@blueprint.route('/groups')
+def groups_page():
+    current_teacher = current_user.teacher
+    groups = {group.id: group.to_dict(rules=('pupils', )) for group in current_teacher.groups}
+    return render_template('/teacher/groups.html', groups=groups)
