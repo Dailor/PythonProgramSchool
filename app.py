@@ -70,6 +70,14 @@ def login_page():
 @app.route("/index")
 @login_required
 def index():
+    if current_user.is_pupil:
+        groups = current_user.pupil.groups
+        if len(groups):
+            return redirect(f'/pupil/groups/{groups[0].id}')
+    elif current_user.is_teacher:
+        return redirect('/teacher/groups')
+    elif current_user.is_admin:
+        return redirect('/admin/users')
     return render_template("index.html")
 
 
@@ -151,9 +159,10 @@ def blueprint_routes_register():
     app.register_blueprint(pupil.blueprint, url_prefix='/pupil')
 
 
+app.config.from_object(config_app.BaseConfig)
+db_session.global_init(debug=app.config["DEBUG"])
+add_default_admin()
+blueprint_routes_register()
+
 if __name__ == '__main__':
-    app.config.from_object(config_app.BaseConfig)
-    db_session.global_init(debug=app.config["DEBUG"])
-    add_default_admin()
-    blueprint_routes_register()
     app.run(host=app.config["HOST"], port=app.config["PORT"])
