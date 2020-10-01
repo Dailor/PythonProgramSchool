@@ -1,30 +1,28 @@
-from app import app, recaptcha
-from app.models import db_session
-from app.models.group import Group
-from app.models.pupil import Pupil
-from app.models.task import TaskCheckStatus
-from app.models.user import User
-from app.models.queries import tasks_count_of_pupil_for_topic, groups_by_subject
+import config_app
+from models import db_session
+from models.pupil import Pupil
+from models.task import TaskCheckStatus
+from models.queries import tasks_count_of_pupil_for_topic
+from models.user import User, Admin
 
-from app.forms.login import LoginForm, LoginAnswers
-from app.forms.registration import RegistrationForm
-from app.forms.password_reset import ResetPasswordRequestForm, ResetPasswordForm
+from modules import admin, teacher, pupil
 
-from app.utils import send_password_reset_email
+from forms.login import LoginForm, LoginAnswers
 
-from flask import render_template, redirect, abort, flash, url_for, request
+from api.task.task_resource import PupilSolutionForTask, PupilSolutionsListForTask
+
+from flask import Flask, render_template, redirect, abort
 from flask_login import login_user, logout_user, current_user, login_required
+from flask_login.login_manager import LoginManager
+from flask_restful import Api
 
 from itertools import groupby
 
+app = Flask(__name__)
+api = Api(app)
 
-def redirect_if_authed(func):
-    def wrapper(*args, **kwargs):
-        if current_user.is_authenticated:
-            return redirect("/index")
-        return func(*args, **kwargs)
-
-    return wrapper
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 
 @app.teardown_appcontext
@@ -32,44 +30,15 @@ def shutdown_session(exception=None):
     db_session.__factory.remove()
 
 
-@redirect_if_authed
-@app.route('/reset_password', methods=['GET', 'POST'])
-def reset_password_request():
-    form = ResetPasswordRequestForm()
-    captcha_error = False
-    if form.is_submitted():
-        if recaptcha.verify():
-            session = db_session.create_session()
-            user = session.query(User).filter_by(email=form.email.data).first()
-            if user:
-                send_password_reset_email(user)
-                flash('Вам на почту отправлены дальнейшие инструкции по восстановлению пароля.')
-                return redirect(url_for('login'))
-            else:
-                flash("Пользователя с такой почтой нет!")
-        else:
-            captcha_error = True
-    return render_template('reset_password_request.html', captcha_error=captcha_error, form=form)
+@login_manager.unauthorized_handler
+def unauthorized_callback():
+    return redirect('/login')
 
 
-@redirect_if_authed
-@app.route('/reset_password/<token>', methods=['GET', 'POST'])
-def reset_password(token):
-    user = User.verify_reset_password_token(token)
-
-    if not user:
-        return redirect(url_for('index'))
-
-    form = ResetPasswordForm()
-
-    if form.validate_on_submit():
-        user.set_password(form.password.data)
-        session = db_session.create_session()
-        session.merge(user)
-        session.commit()
-        flash('Ваш пароль успешно изменен')
-        return redirect(url_for('login'))
-    return render_template('reset_password.html', form=form)
+@login_manager.user_loader
+def load_user(session_id):
+    session = db_session.create_session()
+    return session.query(User).filter(User.session_id == session_id).first()
 
 
 @app.route('/logout')
@@ -78,9 +47,11 @@ def logout():
     return redirect('/login')
 
 
-@redirect_if_authed
 @app.route("/login", methods=["GET", "POST"])
-def login():
+def login_page():
+    if current_user.is_authenticated:
+        return redirect("/")
+
     form = LoginForm()
     errors = dict()
 
@@ -97,51 +68,6 @@ def login():
             errors[LoginAnswers.WRONG_PASSWORD[0]] = LoginAnswers.WRONG_PASSWORD[1]
 
     return render_template("login.html", form=form, **errors)
-
-
-@redirect_if_authed
-@app.route("/registration", methods=["GET", "POST"])
-def registration():
-    form = RegistrationForm()
-    captcha_error = False
-
-    groups_by_subject_data = groups_by_subject()
-
-    groups_by_subject_dict = dict()
-    for group_id, group_name, subject_id, subject_name in groups_by_subject_data:
-        group_info = {"id": group_id,
-                      "name": group_name}
-
-        if subject_id not in groups_by_subject_dict:
-            groups_by_subject_dict[subject_id] = {"name": subject_name,
-                                                  "groups": [group_info]}
-        else:
-            groups_by_subject_dict[subject_id]["groups"].append(group_info)
-
-    if form.is_submitted():
-        if recaptcha.verify():
-            user = form.check_form()
-            if user:
-                session = db_session.create_session()
-                group_ids = [int(x) for x in form.groups.data]
-                groups = session.query(Group).filter(Group.id.in_(group_ids))
-                pupil = Pupil()
-                pupil.groups.extend(groups)
-
-                user.pupil = pupil
-
-                session.add(user)
-                session.commit()
-                flash("Аккаунт создан!")
-                return redirect('/login')
-        else:
-            captcha_error = True
-
-    form.subjects.choices = [
-        (subject_id, groups_by_subject_dict[subject_id]['name']) for subject_id in groups_by_subject_dict]
-
-    return render_template('registration.html', groups_by_subject_dict=groups_by_subject_dict, form=form,
-                           captcha_error=captcha_error)
 
 
 @app.route("/")
@@ -208,3 +134,44 @@ def pupil_profile(pupil_id):
 
     return render_template('pupil_profile.html', pupil=pupil,
                            statistic_for_group=statistic_solved_and_unsolved_task_for_group_of_pupil)
+
+
+def add_default_admin():
+    session = db_session.create_session()
+    user = session.query(User).first()
+
+    if user:
+        return
+
+    user = User()
+    user.name = "Admin"
+    user.surname = "Admin"
+    user.email = app.config["ADMIN_DEFAULT_EMAIL"]
+    user.set_password(app.config["ADMIN_DEFAULT_PASSWORD"])
+
+    admin_user = Admin()
+    user.admin = admin_user
+
+    session.add(user)
+    session.commit()
+
+
+def blueprint_routes_register():
+    app.register_blueprint(admin.blueprint, url_prefix="/admin")
+    app.register_blueprint(teacher.blueprint, url_prefix='/teacher')
+    app.register_blueprint(pupil.blueprint, url_prefix='/pupil')
+
+
+def api_register():
+    api.add_resource(PupilSolutionForTask, '/api_solution')
+    api.add_resource(PupilSolutionsListForTask, '/api_solutions')
+
+
+app.config.from_object(config_app.BaseConfig)
+db_session.global_init(debug=app.config["DEBUG"])
+add_default_admin()
+blueprint_routes_register()
+api_register()
+
+if __name__ == '__main__':
+    app.run(host=app.config["HOST"], port=app.config["PORT"])
