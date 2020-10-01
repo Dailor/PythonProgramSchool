@@ -28,7 +28,7 @@ class Group(SqlAlchemyBase, SerializerMixin):
 
     topics = orm.relationship("Topic", secondary='group_to_topic', back_populates='groups')
     lessons = orm.relationship("Lesson", secondary='lesson_to_group', back_populates='groups')
-    solutions = orm.relationship("Solutions", back_populates='group')
+    solutions = orm.relationship("Solutions", back_populates='group',  lazy='joined')
 
     @property
     def topics_list(self):

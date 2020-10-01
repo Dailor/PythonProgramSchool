@@ -1,9 +1,12 @@
 from models import db_session
-from models.queries.queries import tasks_count_of_pupils_for_topic
 from models.group import Group
 from models.topic import Topic
 from models.lesson import Lesson
-from models.task import Solutions, TaskCheckStatus
+from models.pupil import Pupil
+from models.task import Solutions, TaskCheckStatus, Task
+
+from models.queries import count_tasks_solved_for_lessons_by_pupils_in_group, \
+    count_tasks_in_each_lesson_available_for_group
 
 from api.group.group_resource import GroupResource, check_group_by_id
 from api.lessons.lesson_resource import LessonsListResource, LessonResource, LessonAvailableListResource, \
@@ -99,7 +102,29 @@ def group_lessons_page(group_id):
     group = session.query(Group).get(group_id)
 
     lessons = [lesson for topic in group.topics for lesson in topic.lessons]
-    return render_template('lessons_available.html', group=group, lessons=lessons)
+
+    pupil_count_in_group = len(group.pupils)
+
+    # [(lesson_id, task_id, count_pupils)]
+    count_task_solved_for_lessons = count_tasks_solved_for_lessons_by_pupils_in_group(group_id=group_id)
+    count_task_from_lessons_available_for_group = dict(
+        count_tasks_in_each_lesson_available_for_group(group_id=group_id))
+
+    progress_solved_tasks_by_pupils = dict()
+
+    for lesson in lessons:
+        task_solved = 0
+
+        while len(count_task_solved_for_lessons) and count_task_solved_for_lessons[0][0] == lesson.id:
+            if count_task_solved_for_lessons[0][2] == pupil_count_in_group:
+                task_solved += 1
+            del count_task_solved_for_lessons[0]
+
+        progress_solved_tasks_by_pupils[lesson.id] = task_solved, count_task_from_lessons_available_for_group.get(
+            lesson.id, 1)
+
+    return render_template('lessons_available.html', group=group, lessons=lessons,
+                           progress_solved_tasks_by_pupils=progress_solved_tasks_by_pupils)
 
 
 @blueprint.route('/groups/<int:group_id>/lessons/<int:lesson_id>')
@@ -117,35 +142,17 @@ def lesson_page(group_id, lesson_id):
                            is_lesson_available=is_lesson_available)
 
 
-@blueprint.route('/groups/<int:group_id>/lessons/<int:lesson_id>/solution/<int:solution_id>')
-def solution_page(group_id, lesson_id, solution_id):
+@blueprint.route('/groups/<int:group_id>/lessons/<int:lesson_id>/task/<int:task_id>/pupil/<int:pupil_id>')
+def solution_page(group_id, lesson_id, task_id, pupil_id):
     session = db_session.create_session()
-    solution = session.query(Solutions).get(solution_id)
-    return render_template('solution_page.html', solution=solution, task=solution.task, group_id=group_id)
-
-
-def set_solution_status(solution_id, status):
-    session = db_session.create_session()
-    solution = session.query(Solutions).get(solution_id)
-    solution.review_status = status
-    session.merge(solution)
-    session.commit()
-
-
-@blueprint.route('/groups/<int:group_id>/lessons/<int:lesson_id>/solution/<int:solution_id>/accept')
-def accept_solution(group_id, lesson_id, solution_id):
-    set_solution_status(solution_id, TaskCheckStatus.ACCESS)
-    return redirect(f'/teacher/groups/{group_id}/lessons/{lesson_id}')
-
-
-@blueprint.route('/groups/<int:group_id>/lessons/<int:lesson_id>/solution/<int:solution_id>/decline')
-def decline_solution(group_id, lesson_id, solution_id):
-    set_solution_status(solution_id, TaskCheckStatus.FAILED)
-    return redirect(f'/teacher/groups/{group_id}/lessons/{lesson_id}')
+    pupil = session.query(Pupil).get(pupil_id)
+    task = session.query(Task).get(task_id)
+    return render_template('solution_page.html', task=task, group_id=group_id,
+                           pupil_id=pupil_id, pupil_full_name=pupil.user.full_name)
 
 
 @blueprint.route('/groups')
 def groups_page():
     current_teacher = current_user.teacher
-    groups = {group.id: group.to_dict(rules=('pupils', )) for group in current_teacher.groups}
+    groups = {group.id: group.to_dict(rules=('pupils',)) for group in current_teacher.groups}
     return render_template('/teacher/groups.html', groups=groups)

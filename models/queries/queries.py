@@ -1,16 +1,15 @@
-from models import db_session
+from sqlalchemy import func, distinct, and_, literal, exists, not_
 
-from models.pupil import Pupil
-from models.topic import Topic
-from models.task import Task, Solutions, TaskCheckStatus
+from models import db_session
 from models.group import Group
 from models.lesson import Lesson
+from models.task import Task, Solutions, TaskCheckStatus
+from models.topic import Topic
+from models.pupil import Pupil
 
-from sqlalchemy import func, distinct, and_, literal
 
-
-def tasks_count_of_pupils_for_topic(*, pupil_id=None,
-                                    solution_status=TaskCheckStatus.ACCESS):
+def tasks_count_of_pupil_for_topic(*, pupil_id,
+                                   solution_status=TaskCheckStatus.ACCESS):
     session = db_session.create_session()
 
     query = session.query(Group.id, Topic.id, Group.name, Topic.name, func.count(distinct(Task.id)),
@@ -34,13 +33,38 @@ def tasks_count_of_pupils_for_topic(*, pupil_id=None,
     return query.all()
 
 
-def tasks_solved_all_pupils_in_group_of_lesson(*, group_id):
+def count_tasks_solved_for_lessons_by_pupil(*, pupil_id, group_id):
     session = db_session.create_session()
-    query = session.query(Lesson.id, Lesson.name, func.count(Solutions.id)).select_from(Group)
-    query = query.join(Group.solutions)
-    query = query.join(Lesson, Lesson.id, Solutions.lesson_id == Lesson.id)
-    query = query.filter(Solutions.group_id == group_id,
-                         Solutions.review_status == TaskCheckStatus.ACCESS)
-    query = query.order_by(Lesson.id)
+    query = session.query(Lesson.id, func.count(Task.id))
+    query = query.select_from(Group).filter(Group.id == group_id)
+    query = query.join(Group.lessons)
+    query = query.join(Lesson.tasks)
+    query = query.join(Solutions, and_(Solutions.pupil_id == pupil_id, Solutions.group_id == group_id,
+                                       Solutions.task_id == Task.id,
+                                       Solutions.review_status.is_(TaskCheckStatus.ACCESS)))
     query = query.group_by(Lesson.id)
+    return query.all()
+
+
+def count_tasks_in_each_lesson_available_for_group(*, group_id):
+    session = db_session.create_session()
+
+    query = session.query(Lesson.id, func.count(Task.id))
+    query = query.select_from(Group).filter(Group.id == group_id)
+    query = query.join(Group.lessons)
+    query = query.join(Lesson.tasks)
+    query = query.group_by(Lesson.id)
+
+    return query.all()
+
+
+def count_tasks_solved_for_lessons_by_pupils_in_group(*, group_id):
+    session = db_session.create_session()
+    query = session.query(Lesson.id, Task.id, func.count(Solutions.id)).select_from(Group)
+    query = query.join(Group.lessons)
+    query = query.join(Lesson.tasks)
+    query = query.join(Solutions, and_(Solutions.group_id == group_id, Solutions.task_id == Task.id,
+                                       Solutions.review_status.is_(TaskCheckStatus.ACCESS)))
+    query = query.order_by(Lesson.id)
+    query = query.group_by(Lesson.id, Task.id)
     return query.all()

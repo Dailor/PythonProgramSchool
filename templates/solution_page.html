@@ -17,18 +17,22 @@
 <!--<script src="{{url_for('static', filename='vendor/codemirror/mode/clike/clike.js')}}"></script>-->
 
 <script>
-task_id = {{task.id}};
-group_id = {{group_id}};
+const pupil_id = {{pupil_id}};
+const task_id = {{task.id}};
+const group_id = {{group_id}};
+const is_teacher = {{ ('true' if current_user.is_teacher else 'false')|safe}};
 
-{% if solution %}
-    task_solution = {{solution.to_dict()|tojson}};
-{% else %}
-    task_solution = null;
-{% endif %}
 
 </script>
 
-<script src="{{url_for('static', filename='js/task_solution.js', version=1)}}"></script>
+<script src="{{url_for('static', filename='js/task_solution.js', version=2)}}"></script>
+
+{% if current_user.is_pupil %}
+    <script src="{{url_for('static', filename='js/pupil/task_solution.js', version=1)}}"></script>
+{% else %}
+    <script src="{{url_for('static', filename='js/teacher/task_solution.js', version=1)}}"></script>
+{% endif %}
+
 {% endblock %}
 
 {% block content %}
@@ -59,31 +63,41 @@ group_id = {{group_id}};
                         </tbody>
                     </table>
                 </div>
-                <div class="mt-4">
-                    <h4>Решение</h4>
-                    <div class="mr-2 mt-2" id="codeMirror"></div>
+                <div class="row mt-4">
+                    <div class="col-6">
+                        <h4>Решение</h4>
+                        <div class="mr-2 mt-2" id="codeMirror"></div>
 
-                    {% if solution %}
-                    {% set solution_msg_and_selector = ({true: ['success', 'Принят'], false: ['danger', 'Отклонен'],
-                    none: ['warning', 'На рассмотрении']}) %}
-                    {% if current_user.is_teacher %}
-                    <h4 class="my-4">Отправил: {{solution.pupil.user.full_name}}</h4>
-                    {% endif %}
-                    <h4 class="my-3">Решение: <span
-                            class="text-{{solution_msg_and_selector[solution.review_status][0]}}">{{solution_msg_and_selector[solution.review_status][1]}}</span>
-                    </h4>
-                    {% endif %}
+                        {% if current_user.is_teacher %}
+                        <h4 class="my-4">Отправил: {{pupil_full_name}}</h4>
+                        {% endif %}
 
-                    {% if current_user.is_pupil %}
-                    <button id="sendSolution" class="btn btn-primary my-3" onclick="send_solution()">Отправить</button>
-                    {% else %}
-                    <div>
-                        <a id="acceptSolution" class="btn btn-success my-3" href="{{solution.id}}/accept">Принять
-                        </a>
-                        <a id="cancelSolution" class="btn btn-danger my-3" href="{{solution.id}}/decline">Отклонить
-                        </a>
+                        {% if current_user.is_pupil %}
+                        <button id="sendSolution" class="btn btn-primary my-3" onclick="send_solution()">Отправить
+                        </button>
+                        {% else %}
+                        <div>
+                            <button id="acceptSolution" class="btn btn-success my-3" onclick="acceptSolution()" disabled>Принять</button>
+                            <button id="declineSolution" class="btn btn-danger my-3" onclick="declineSolution()" disabled>Отклонить</button>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
+                    <div class="col-6">
+                        <h4>История решений</h4>
+                        <div class="table-responsive table-bordered solutions-history">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Попытка</th>
+                                    <th scope="col">Дата</th>
+                                    <th scope="col">Статус</th>
+                                </tr>
+                                </thead>
+                                <tbody id="solutions">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

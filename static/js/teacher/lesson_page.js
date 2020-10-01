@@ -1,4 +1,4 @@
-var url_api_lesson_avaible = '/teacher/lesson_available_api';
+var url_api_lesson_available = '/teacher/lesson_available_api';
 var url_api_solutions = '/teacher/api_solutions/';
 var async_http_already = false;
 var selected_task = null;
@@ -31,7 +31,7 @@ function load_task_block(task_index_in_lesson){
     MathJax.Hub.Typeset();
 }
 
-function add_pupil_status(pupils, block_ul){
+function add_pupil_status(pupils, block_ul, task_id){
     block_ul.html('');
 
     for(var index=0; index < pupils.length; index++){
@@ -40,8 +40,8 @@ function add_pupil_status(pupils, block_ul){
         var li_html;
 
         if ('solution_id' in pupil){
-            var url_for_solution = `/teacher/groups/${group_id}/lessons/${lesson.id}/solution/${pupil.solution_id}`
-            li_html = `<a href='${url_for_solution}'><li class="list-group-item rounded">${pupil_full_name}</li></a>`;
+            var url_for_solution = `/teacher/groups/${group_id}/lessons/${lesson.id}/task/${task_id}/pupil/${pupil.id}`;
+            li_html = `<a href='${url_for_solution}'><li class="list-group-item list-group-item-action">${pupil_full_name}</li></a>`;
         }else{
             li_html = `<li class="list-group-item">${pupil_full_name}</li>`;
         }
@@ -59,6 +59,7 @@ function add_pupil_status(pupils, block_ul){
 
 function success_get_solutions(data, textStatus, jqXHR, task_index_in_lesson){
     var card_body = $('#' + task_index_in_lesson).find('.card-body');
+    var task_id = lesson.tasks[task_index_in_lesson].id;
 
     for(var index=0; index < selector_pupils_blocks.length; index++){
         var selector_pupil = selector_pupils_blocks[index];
@@ -67,7 +68,7 @@ function success_get_solutions(data, textStatus, jqXHR, task_index_in_lesson){
         var pupils = data[dict_key];
         var block_ul = card_body.find(`.${selector_pupil}`).find('ul');
 
-        add_pupil_status(pupils, block_ul);
+        add_pupil_status(pupils, block_ul, task_id);
     }
 
     var success_passed_pupils_ul = card_body.find('.failed-pupils').find('ul');
@@ -156,7 +157,7 @@ function set_lesson_available(lesson_id, set_status){
     async_http_already = true;
 
     $.ajax({
-        url: url_api_lesson_avaible,
+        url: url_api_lesson_available,
         data: data,
         type: http_request_type,
         success: function(data, textStatus, jqXHR){

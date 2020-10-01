@@ -4,6 +4,7 @@ import sqlalchemy
 from sqlalchemy import orm
 from sqlalchemy_serializer import SerializerMixin
 
+import datetime
 
 class TaskCheckMethods:
     MANUAL_CHECK = "manual_check"
@@ -58,6 +59,7 @@ class Solutions(SqlAlchemyBase, SerializerMixin):
 
     result = sqlalchemy.Column(sqlalchemy.Text)
     review_status = sqlalchemy.Column(sqlalchemy.Boolean)
+    date_delivery = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.utcnow)
 
     pupil = orm.relationship("Pupil", back_populates='solutions', lazy='joined')
     group = orm.relationship("Group", back_populates='solutions', lazy='joined')

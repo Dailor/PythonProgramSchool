@@ -2,7 +2,7 @@
 {% block title %}{{group.name}}{% endblock %}
 
 {% block style %}
-<link href="{{url_for('static', filename='css/lessons_available.css', version=1)}}" rel="stylesheet">
+<link href="{{url_for('static', filename='css/lessons_available.css', version=2)}}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -17,18 +17,26 @@
         {% endif %}
         <a href="{{lesson_url}}">
             <div class="card-body">
+                {% if current_user.is_pupil %}
+                    {% set done_count = lessons_solve_status.get(lesson.id, 0) %}
+                    {% set done_from_count = count_tasks_in_lesson.get(lesson.id, 1) %}
+                    {% set progress_bar_solved_tasks = done_count / done_from_count * 100 %}
+                {% else %}
+                    {% set done_count, done_from_count = progress_solved_tasks_by_pupils[lesson.id] %}
+                    {% set progress_bar_solved_tasks = done_count / done_from_count * 100 %}
+                {% endif %}
                 <div class="row mb-1">
                     <h4 class="m-0 font-weight-bold col-sm-8">{{lesson.name}}</h4>
                     <div class="col-sm-4">
                         <div class="progress">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{progress_bar_solved_tasks}}%"></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="row">
                     <div class="col-sm-8"></div>
-                    <h6 class="font-weight-bold col-sm-4">Выполнено: </h6>
+                    <h6 class="font-weight-bold col-sm-4">Выполнено: {{done_count}} из {{done_from_count}}</h6>
                 </div>
             </div>
         </a>

@@ -2,7 +2,7 @@
 {% block title %}{{lesson.name}}{% endblock %}
 
 {% block style %}
-<link href="{{url_for('static', filename='css/lesson_page.css', version=1)}}" rel="stylesheet">
+<link href="{{url_for('static', filename='css/lesson_page.css', version=2)}}" rel="stylesheet">
 {% endblock %}
 
 {% block javascript %}
@@ -15,19 +15,20 @@
 lesson = {{lesson.to_dict()|tojson}};
 group_id = {{group_id}};
 
+
 </script>
 
 {% if current_user.is_teacher %}
-<script src="{{ url_for('static', filename='js/teacher/lesson_page.js', version=1) }}"></script>
+<script src="{{ url_for('static', filename='js/teacher/lesson_page.js', version=2) }}"></script>
 {% else %}
-<script src="{{ url_for('static', filename='js/pupil/lesson_page.js',version=1) }}"></script>
+<script src="{{ url_for('static', filename='js/pupil/lesson_page.js',version=2) }}"></script>
 {% endif %}
 
 {% endblock %}
 
 {% block content %}
 <div class="px-5">
-    <h1 class="font-weight-bold mb-3">{{lesson.name}}</h1>
+    <h2 class="font-weight-bold mb-3">{{lesson.name}}</h2>
     {% if current_user.is_teacher %}
     <div class="lesson_available_switcher" id="lesson_available_switcher"
          onclick="set_lesson_available({{lesson.id}}, {{(not is_lesson_available)|lower}})">
@@ -39,10 +40,10 @@ group_id = {{group_id}};
     </div>
     {% endif %}
     <div class="row">
-        <div class="col">
+        <div class="col-sm-6">
             <div class="card">
                 <div class="card-header py-3">
-                    <h3 class="m-0 font-weight-bold text-primary">Задачи</h3>
+                    <h4 class="m-0 font-weight-bold text-primary">Задачи</h4>
                 </div>
                 <div class="task card-body px-0 pb-0">
                     {% for task in lesson.tasks %}
@@ -54,19 +55,19 @@ group_id = {{group_id}};
                         <div class="card-body" hidden {{'selected' if current_user.is_pupil else ''}}>
                             {% if not current_user.is_pupil %}
                             <div class="waiting-check-pupils task-results">
-                                <h4>Ждут проверки</h4>
+                                <h4 class="text-warning">Ждут проверки</h4>
                                 <ul class="list-group"></ul>
                             </div>
                             <div class="my-4 success-passed-pupils task-results">
-                                <h4>Засчитано</h4>
+                                <h4 class="text-success">Решили</h4>
                                 <ul class="list-group"></ul>
                             </div>
                             <div class="my-4 failed-pupils task-results">
-                                <h4>Не засчитано</h4>
+                                <h4 class="text-danger">Не решили</h4>
                                 <ul class="list-group"></ul>
                             </div>
                             <div class="not-passed-pupils task-results">
-                                <h4>Не сдали</h4>
+                                <h4 class="text-danger">Не сдали</h4>
                                 <ul class="list-group"></ul>
                             </div>
                             {% endif %}
@@ -78,7 +79,7 @@ group_id = {{group_id}};
         </div>
         <div class="col selected_task" hidden>
             <div class="card shadow">
-                <div class="card-header"><h3 id="taskName" class="m-0 font-weight-bold text-info"></h3>
+                <div class="card-header"><h4 id="taskName" class="m-0 font-weight-bold text-info"></h4>
                 </div>
                 <div class="card-body">
                     <h4>Описание</h4>

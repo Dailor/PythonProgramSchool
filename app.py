@@ -2,20 +2,24 @@ import config_app
 from models import db_session
 from models.pupil import Pupil
 from models.task import TaskCheckStatus
-
-from models.queries.queries import tasks_count_of_pupils_for_topic
+from models.queries import tasks_count_of_pupil_for_topic
+from models.user import User, Admin
 
 from modules import admin, teacher, pupil
 
-from models.user import User, Admin
 from forms.login import LoginForm, LoginAnswers
+
+from api.task.task_resource import PupilSolutionForTask, PupilSolutionsListForTask
+
 from flask import Flask, render_template, redirect, abort
 from flask_login import login_user, logout_user, current_user, login_required
 from flask_login.login_manager import LoginManager
+from flask_restful import Api
 
 from itertools import groupby
 
 app = Flask(__name__)
+api = Api(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -91,11 +95,10 @@ def pupil_profile(pupil_id):
     pupil = session.query(Pupil).get(pupil_id)
 
     # Group.id, Topic.id, Group.name, Topic.name, func.count(distinct(Task.id)), solution_status
-    tasks_success_count_of_pupil_for_topics = tasks_count_of_pupils_for_topic(pupil_id=pupil_id,
-                                                                              solution_status=TaskCheckStatus.ACCESS)
+    tasks_success_count_of_pupil_for_topics = tasks_count_of_pupil_for_topic(pupil_id=pupil_id,
+                                                                             solution_status=TaskCheckStatus.ACCESS)
 
-    tasks_unsolved_count_of_pupil_for_topics = tasks_count_of_pupils_for_topic(pupil_id=pupil_id,
-                                                                               solution_status=None)
+    tasks_unsolved_count_of_pupil_for_topics = tasks_count_of_pupil_for_topic(pupil_id=pupil_id, solution_status=None)
 
     statistic_solved_and_unsolved_task_for_group_of_pupil = dict()
 
@@ -159,10 +162,16 @@ def blueprint_routes_register():
     app.register_blueprint(pupil.blueprint, url_prefix='/pupil')
 
 
-app.config.from_object(config_app.BaseConfig)
+def api_register():
+    api.add_resource(PupilSolutionForTask, '/api_solution')
+    api.add_resource(PupilSolutionsListForTask, '/api_solutions')
+
+
+app.config.from_object(config_app.DevelopmentConfig)
 db_session.global_init(debug=app.config["DEBUG"])
 add_default_admin()
 blueprint_routes_register()
+api_register()
 
 if __name__ == '__main__':
     app.run(host=app.config["HOST"], port=app.config["PORT"])
