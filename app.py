@@ -167,7 +167,7 @@ def api_register():
     api.add_resource(PupilSolutionsListForTask, '/api_solutions')
 
 
-app.config.from_object(config_app.DevelopmentConfig)
+app.config.from_object(config_app.BaseConfig)
 db_session.global_init(debug=app.config["DEBUG"])
 add_default_admin()
 blueprint_routes_register()
