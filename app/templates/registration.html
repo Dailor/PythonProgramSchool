@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Регистрация</title>
+
+    <!-- Custom fonts for this template-->
+    <link href=" {{url_for('static', filename='vendor/fontawesome-free/css/all.min.css')}} " rel="stylesheet"
+          type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+          rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+
+    <link href="{{ url_for('static', filename='css/sb-admin-2.min.css') }}" rel="stylesheet">
+    <!-- bootstrap -->
+    <link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+
+    <!-- select2 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
+
+    <!-- select2-bootstrap4-theme -->
+    <link href="https://raw.githack.com/ttskch/select2-bootstrap4-theme/master/dist/select2-bootstrap4.css"
+          rel="stylesheet"> <!-- for live demo page -->
+
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+
+</head>
+
+<body class="bg-gradient-primary">
+
+<div class="container">
+
+    <div class="card o-hidden border-0 shadow-lg my-5">
+        <div class="card-body p-0">
+            <!-- Nested Row within Card Body -->
+            <div class="row">
+
+                <div class="col-lg-12">
+                    <div class="p-5">
+                        <div class="text-center">
+                            <h1 class="h4 text-gray-900 mb-4">Регистрация</h1>
+                        </div>
+                        <form method="post" class="user" onsubmit="submit_form()">
+                            <div class="form-group">
+                                {{ form.hidden_tag() }}
+                                {{ form.csrf_token }}
+                            </div>
+
+                            <div class="form-group row">
+                                <div class="col-sm-6 mb-3 mb-sm-0">
+                                    {{form.first_name(class="form-control form-control-user", id="firstName", placeholder="Имя")}}
+                                </div>
+                                <div class="col-sm-6">
+                                    {{form.last_name(class="form-control form-control-user", id="lastName", placeholder="Фамилия")}}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                {{form.email(type="email", class="form-control form-control-user", id="email", placeholder="Электронная почта")}}
+                                <div class="ml-3">
+                                    {% for error in form.email.errors %}
+                                    <span class="text-danger" id="emailError">{{error}}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <div class="col-sm-6 mb-3 mb-sm-0">
+                                    {{form.password(class="form-control form-control-user", id="password", placeholder="Пароль")}}
+                                    <div class="ml-3">
+                                        {% for error in form.password.errors %}
+                                        <span class="text-danger" id="passwordError">{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    {{form.password_repeat(class="form-control form-control-user", id="repeatPassword", placeholder="Пароль ещё раз")}}
+                                    <div class="ml-3">
+                                        {% for error in form.password_repeat.errors %}
+                                        <span class="text-danger" id="repeatPasswordError">{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <div class="col-sm-6">
+                                    <label for="FormControlSubjects">Предметы</label>
+                                    {{ form.subjects(class="w-100", id="FormControlSubjects") }}
+                                </div>
+                                <div class="col-sm-6">
+                                    <label for="FormControlGroups">Группы</label>
+                                    {{ form.groups(class="w-100", id="FormControlGroups") }}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                {{ recaptcha }}
+                                <div class="ml-3">
+                                    {% if captcha_error %}
+                                    <span class="text-danger" id="errorCaptcha">Попробуйте снова пройти проверку на робота</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                {{ form.submit(class="btn btn-primary btn-user btn-block col-4") }}
+                            </div>
+                        </form>
+                        <hr>
+                        <div class="text-center">
+                            <a class="small" href="/reset_password">Забыл пароль?</a>
+                        </div>
+                        <div class="text-center">
+                            <a class="small" href="/login">У меня уже есть аккаунт</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='vendor/jquery/jquery.slim.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.min.js') }}"></script>
+
+<!-- select2 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+
+<!-- select2-bootstrap4-theme -->
+<script></script>
+
+<script>
+groups_by_subject_dict = {{groups_by_subject_dict|tojson}}
+
+</script>
+
+<script src="{{ url_for('static', filename='js/registration.js') }}"></script>
+
+</body>
+
+</html>
