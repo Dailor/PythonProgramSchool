@@ -1,5 +1,3 @@
-from app.config_app import DataBaseConfig
-
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from sqlalchemy.orm import Session
@@ -23,6 +21,8 @@ def global_init(debug):
 
     if __factory:
         return
+
+    from app.config_app import DataBaseConfig
 
     conn_str = DataBaseConfig.conn_str
     print(f"Подключение к базе данных по адресу {conn_str}")
