@@ -20,7 +20,7 @@ fileConfig(config.config_file_name)
 
 import sys
 
-path_to_project = r'D:\Python projects\MyProjects\PythonProgramSchool\app'
+path_to_project = r'/var/www/school_web/PythonProgramSchool/app'
 sys.path.insert(0, path_to_project)
 from models.db_session import SqlAlchemyBase
 
