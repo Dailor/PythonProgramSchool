@@ -22,6 +22,7 @@ import sys
 
 path_to_project = r'D:\Python projects\MyProjects\PythonProgramSchool\app'
 sys.path.insert(0, path_to_project)
+
 from models.db_session import SqlAlchemyBase
 
 target_metadata = SqlAlchemyBase.metadata
