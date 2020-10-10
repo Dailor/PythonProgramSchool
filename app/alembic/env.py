@@ -21,6 +21,7 @@ fileConfig(config.config_file_name)
 import sys
 path_to_project = '/var/www/school_web/PythonProgramSchool'
 sys.path.insert(0, path_to_project)
+
 from models.db_session import SqlAlchemyBase
 import models.__all_models
 
