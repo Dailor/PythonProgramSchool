@@ -39,7 +39,7 @@ class RegistrationForm(FlaskForm):
 
     def check_email(self):
         session = db_session.create_session()
-        user = session.query(User).filter(User.email == self.email.data)
+        user = session.query(User).filter(User.email == self.email.data).first()
         if user is not None:
             self.email.errors = ["Пользователь с такой почтой уже существует"]
             return False
