@@ -54,7 +54,7 @@ def init_app():
     api_register()
 
 
-def main():
+def get_app():
     global app, api, recaptcha, login_manager, mail
 
     app = Flask(__name__)
@@ -70,4 +70,4 @@ def main():
     from app import routes
     from app import login_manager_init
 
-    app.run(host=app.config["HOST"], port=app.config["PORT"], threaded=False)
+    return app
