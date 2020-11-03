@@ -2,7 +2,7 @@
 {% block title %}{{group.name}}{% endblock %}
 
 {% block style %}
-<link href="{{url_for('static', filename='css/lessons_available.css', version=2)}}" rel="stylesheet">
+<link href="{{url_for('static', filename='css/lessons_available.css', version=STATIC_FILES_VERSION)}}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}

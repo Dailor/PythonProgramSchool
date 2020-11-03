@@ -19,14 +19,14 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 
 import sys
-path_to_project = '/var/www/school_web/PythonProgramSchool'
+
+path_to_project = r'D:\Python projects\MyProjects\PythonProgramSchool'
 sys.path.insert(0, path_to_project)
 
-from models.db_session import SqlAlchemyBase
-import models.__all_models
+from app.models.db_session import SqlAlchemyBase
+import app.models.__all_models
 
 target_metadata = SqlAlchemyBase.metadata
-
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

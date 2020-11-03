@@ -19,8 +19,8 @@ class Group(SqlAlchemyBase, SerializerMixin):
     name = sqlalchemy.Column(sqlalchemy.String(20), unique=True, nullable=False)
     is_active = sqlalchemy.Column(sqlalchemy.Boolean, default=True)
 
-    subject_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("subjects.id", on_delete='SET NULL'))
-    teacher_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("teachers.id", on_delete='SET NULL'))
+    subject_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("subjects.id"))
+    teacher_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("teachers.id"))
 
     subject = orm.relationship("Subject", uselist=False, back_populates="groups")
     teacher = orm.relationship("Teacher", uselist=False, back_populates="groups")
@@ -33,3 +33,7 @@ class Group(SqlAlchemyBase, SerializerMixin):
     @property
     def topics_list(self):
         return [topic.name for topic in self.topics]
+
+    @property
+    def topics_id_list(self):
+        return [topic.id for topic in self.topics]

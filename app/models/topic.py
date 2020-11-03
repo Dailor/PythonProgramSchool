@@ -4,6 +4,7 @@ from sqlalchemy import orm
 from sqlalchemy_serializer import SerializerMixin
 
 topic_available = sqlalchemy.Table('group_to_topic', SqlAlchemyBase.metadata,
+                                   sqlalchemy.Column('id', sqlalchemy.Integer, primary_key=True, autoincrement=True),
                                    sqlalchemy.Column('topic_id', sqlalchemy.Integer,
                                                      sqlalchemy.ForeignKey("topics.id")),
                                    sqlalchemy.Column('group_id', sqlalchemy.Integer, sqlalchemy.ForeignKey("groups.id"))
@@ -15,7 +16,7 @@ class Topic(SqlAlchemyBase, SerializerMixin):
     __tablename__ = "topics"
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    name = sqlalchemy.Column(sqlalchemy.String(30), unique=True)
+    name = sqlalchemy.Column(sqlalchemy.String(30))
 
     author_teacher_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('teachers.id'))
 
@@ -30,4 +31,3 @@ class Topic(SqlAlchemyBase, SerializerMixin):
     @property
     def groups_id(self):
         return [group.id for group in self.groups]
-

@@ -5,11 +5,6 @@ function successChangeReviewStatus(data, textStatus, jqXHR){
     changeSolutionReviewStatus(data);
 }
 
-function changeSolutionReviewStatus(solution){
-    var solution_row = $(`#${solution_identify}${solution.id}`);
-    var solution_review_status_data = solution_row.children('#solution-status');
-    solution_review_status_data.html(status_span(solution.review_status));
-}
 
 function apiRequestChangeReviewStatus(review_status){
     if(last_solution_id == null) return;
@@ -21,7 +16,6 @@ function apiRequestChangeReviewStatus(review_status){
         data:data,
         success: successChangeReviewStatus
     })
-
 }
 
 function acceptSolution(){

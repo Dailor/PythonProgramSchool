@@ -1,9 +1,7 @@
+from app.config_app import CheckerConfig
+
 from app.models import db_session
-from app.models.group import Group
-from app.models.topic import Topic
-from app.models.lesson import Lesson
-from app.models.pupil import Pupil
-from app.models.task import Task
+from app.models.__all_models import Group, Topic, Lesson, Pupil, Task, ProgrammingLanguage, Subject
 
 from app.models.queries import count_tasks_solved_for_lessons_by_pupils_in_group, \
     count_tasks_in_each_lesson_available_for_group
@@ -12,6 +10,7 @@ from app.api.group.group_resource import GroupResource, check_group_by_id
 from app.api.lessons.lesson_resource import LessonsListResource, LessonResource, LessonAvailableListResource, \
     check_topic_by_id, check_lesson_by_id
 from app.api.task.task_resource import SolutionsListResource
+from app.api.topics.topic_resource import TopicListResource, TopicResource
 
 from flask import render_template, redirect, abort
 from flask.blueprints import Blueprint
@@ -22,10 +21,15 @@ blueprint = Blueprint('teacher', __name__, template_folder="templates", static_f
 api = Api(blueprint)
 
 api.add_resource(GroupResource, '/api_group/<int:group_id>')
+
 api.add_resource(LessonsListResource, '/api_lesson/<int:topic_id>')
 api.add_resource(LessonResource, '/api_lesson/<int:topic_id>/lesson/<int:lesson_id>')
 api.add_resource(LessonAvailableListResource, '/lesson_available_api')
+
 api.add_resource(SolutionsListResource, '/api_solutions/group/<int:group_id>/task/<int:task_id>')
+
+api.add_resource(TopicResource, '/api_topics/<int:topic_id>')
+api.add_resource(TopicListResource, '/api_topics')
 
 
 @blueprint.before_request
@@ -74,7 +78,9 @@ def lesson_add_page(topic_id):
     page_type = 'Добавить'
 
     return render_template('/teacher/lesson_edit.html', topic_id=topic.id, http_request_type=http_request_type,
-                           page_type=page_type)
+                           page_type=page_type, ProgrammingLanguage=ProgrammingLanguage,
+                           time_limit_max=CheckerConfig.CPU_TIME_LIMIT_MAX,
+                           memory_limit_max=CheckerConfig.MEMORY_LIMIT_MAX_MB)
 
 
 @blueprint.route('/topics/<int:topic_id>/lesson/<int:lesson_id>')
@@ -91,7 +97,9 @@ def lesson_edit_page(topic_id, lesson_id):
 
     return render_template('/teacher/lesson_edit.html', topic_id=topic.id, http_request_type=http_request_type,
                            lesson=lesson.to_dict(),
-                           page_type=page_type)
+                           page_type=page_type, ProgrammingLanguage=ProgrammingLanguage,
+                           time_limit_max=CheckerConfig.CPU_TIME_LIMIT_MAX,
+                           memory_limit_max=CheckerConfig.MEMORY_LIMIT_MAX_MB)
 
 
 @blueprint.route('/groups/<int:group_id>/lessons')
@@ -138,7 +146,11 @@ def lesson_page(group_id, lesson_id):
 
     is_lesson_available = lesson in group.lessons
 
-    return render_template('lesson_page.html', group_id=group.id, lesson=lesson,
+    lesson_to_dict_only = (
+        'id', 'name', 'tasks.id', 'tasks.name', 'tasks.description', 'tasks.time_sec', 'tasks.memory_mb',
+        'tasks.examples')
+
+    return render_template('lesson_page.html', group_id=group.id, lesson=lesson.to_dict(only=lesson_to_dict_only),
                            is_lesson_available=is_lesson_available)
 
 
@@ -154,5 +166,12 @@ def solution_page(group_id, lesson_id, task_id, pupil_id):
 @blueprint.route('/groups')
 def groups_page():
     current_teacher = current_user.teacher
-    groups = {group.id: group.to_dict(rules=('pupils',)) for group in current_teacher.groups}
-    return render_template('/teacher/groups.html', groups=groups)
+
+    session = db_session.create_session()
+
+    groups = {group.id: group.to_dict(only=('id', 'name', 'pupils', 'subject_id', 'is_active', 'topics.id')) for group
+              in current_teacher.groups}
+    topics = {topic.id: topic.name for topic in session.query(Topic).all()}
+    subjects = {subject.id: subject.name for subject in session.query(Subject).all()}
+
+    return render_template('/teacher/groups.html', groups=groups, topics=topics, subjects=subjects)

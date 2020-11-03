@@ -27,6 +27,11 @@ def redirect_if_authed(func):
     return wrapper
 
 
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db_session.__factory.remove()
+
+
 @redirect_if_authed
 @app.route('/reset_password', methods=['GET', 'POST'])
 def reset_password_request():
@@ -65,6 +70,7 @@ def reset_password(token):
         flash('Ваш пароль успешно изменен')
         return redirect(url_for('login'))
     return render_template('reset_password.html', form=form)
+
 
 @app.route('/logout')
 def logout():
@@ -202,4 +208,3 @@ def pupil_profile(pupil_id):
 
     return render_template('pupil_profile.html', pupil=pupil,
                            statistic_for_group=statistic_solved_and_unsolved_task_for_group_of_pupil)
-

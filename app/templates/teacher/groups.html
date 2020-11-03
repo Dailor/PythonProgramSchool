@@ -3,17 +3,26 @@
 
 {% block style %}
 <link href="{{url_for('static', filename='vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
+<!-- select2 -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
+
+<!-- select2-bootstrap4-theme -->
+<link href="https://raw.githack.com/ttskch/select2-bootstrap4-theme/master/dist/select2-bootstrap4.css"
+      rel="stylesheet"> <!-- for live demo page -->
+
+<link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
 {% endblock %}
 
 {% block javascript %}
 
 <script>
     groups = {{ groups|tojson }}
-
-
+    topics = {{ topics|tojson }}
+    subjects = {{ subjects|tojson }}
 
 </script>
-<script src="{{ url_for('static', filename='js/teacher/groups.js', version=1) }}"></script>
+<script src="{{ url_for('static', filename='js/teacher/groups.js', version=STATIC_FILES_VERSION) }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -28,9 +37,14 @@
                     <ul class="list-group-flush p-0">
                         {% for group_id in groups %}
                         {% set group = groups[group_id] %}
-                        <li class="list-group-item d-flex justify-content-between cursor-pointer" onclick="show_pupil({{group_id}})">
+                        <li class="list-group-item d-flex justify-content-between">
                             <a class="nav-link p-0" href="/teacher/groups/{{group_id}}/lessons">{{group['name']}}</a>
-                            <span class="fas fa-circle get-pupils"></span>
+                            <div>
+                                <button class="btn btn-info btn-sm" onclick="show_pupil({{group_id}})">Ученики</button>
+                                <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#change-topics" onclick="editing_group_now({{group_id}})">
+                                    Изменить
+                                </button>
+                            </div>
                         </li>
                         {% endfor %}
                     </ul>
@@ -51,4 +65,54 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="change-topics" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Изменить <span id="group-name"
+                                                                                          class="text-warning">test</span>
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="group-name-input">Название</label>
+                    <input type="text" class="form-control" id="group-name-input" placeholder="Название">
+                </div>
+                <div class="form-group">
+                    <label for="group-status">Стутус</label>
+                    <select class="form-control" id="group-status">
+                        <option value="1">Обучается</option>
+                        <option value="0">Закончен</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="group-subject">Предмет</label>
+                    <select class="form-control" id="group-subject">
+                        {% for subject_id in subjects %}
+                        <option value="{{ subject_id }}">{{subjects[subject_id]}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="group-topics">Категории</label>
+                    <select multiple name="topics" id="group-topics">
+                        {% for topic_id in topics %}
+                        <option value="{{ topic_id }}">{{topics[topic_id]}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

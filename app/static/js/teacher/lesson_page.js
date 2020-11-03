@@ -10,26 +10,6 @@ function get_url_api_solutions_on_task(group_id, task_id){
     return `${url_api_solutions}/group/${group_id}/task/${task_id}`;
 }
 
-function load_task_block(task_index_in_lesson){
-    var task = lesson.tasks[task_index_in_lesson];
-
-    var task_block = $('.selected_task');
-    task_block.find('#taskName').text(task.name);
-    task_block.find('#taskDescription').html(task.description);
-
-    var tbodyDataExamples = task_block.find('#dataExamples');
-    tbodyDataExamples.html('');
-
-    var trRowExample = $('<tr class="rowExample"></tr>');
-
-    trRowExample.append(`<td class="p-0 dataIn">${task.in_data}</td>`)
-    trRowExample.append(`<td class="p-0 dataOut">${task.out_data}</td>`)
-
-    tbodyDataExamples.append(trRowExample);
-
-    $('.selected_task').removeAttr('hidden');
-    MathJax.Hub.Typeset();
-}
 
 function add_pupil_status(pupils, block_ul, task_id){
     block_ul.html('');

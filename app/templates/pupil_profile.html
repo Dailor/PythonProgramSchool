@@ -12,7 +12,7 @@
 <script>
     statistic_for_group = {{ statistic_for_group|tojson }}
 </script>
-<script src="{{url_for('static', filename='/js/profile_page.js', version=1)}}"></script>
+<script src="{{url_for('static', filename='/js/profile_page.js', version=STATIC_FILES_VERSION)}}"></script>
 {% endblock %}
 
 {% block content_class%}ml-1{% endblock %}

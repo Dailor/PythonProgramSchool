@@ -1,4 +1,6 @@
-from app.models.task import Task, Solutions, TaskCheckStatusString, TaskCheckStatus
+from app.config_app import CheckerConfig
+
+from app.models.task import Task, Solutions, TaskCheckStatusString, TaskCheckStatus, TaskInfoFields
 from app.models.group import Group
 from ...models import db_session
 
@@ -6,6 +8,9 @@ from app.api.group.group_resource import check_group_by_id
 from app.api.pupils.pupil_resource import check_pupil_by_id
 
 from .parser import parser, parser_solution_for_task, parser_solutions_list_for_task, parser_solution_status_change
+
+import requests
+import json
 
 from flask import jsonify
 from flask_restful import Resource, abort
@@ -102,16 +107,64 @@ class SolutionsListResource(Resource):
         if pupil is None or pupil not in group.pupils:
             abort(403)
 
+        task = session.query(Task).get(task_id)
+
         solution = Solutions()
         solution.task_id = task_id
         solution.group_id = group_id
         solution.pupil = pupil
         solution.result = args['result']
 
+        task.api_check = True
+
+        if task.api_check:
+            solution.solution_info = {TaskInfoFields.ACCEPT: 0,
+                                      TaskInfoFields.FAILED: 0,
+                                      TaskInfoFields.COUNT: task.get_tests_count()}
+
         session.add(session.merge(solution))
         session.commit()
 
+        if task.api_check:
+            self.send_task_to_checker(solution, task)
+
         return jsonify({'success': 'success', **solution.to_dict(only=('id', 'date_delivery', 'review_status'))})
+
+    def send_task_to_checker(self, solution, task):
+        callback_url = CheckerConfig.CALLBACK_URL
+        params_callback_url = {
+            'SECRET_KEY': CheckerConfig.SECRET_KEY,
+            'solution_id': solution.id
+        }
+
+        data_one = {'source_code': solution.result,
+                    'language_id': task.language_id,
+                    'cpu_time_limit': task.time_sec,
+                    'memory_limit': task.memory_mb * 1000
+                    }
+
+        submissions = list()
+
+        tests = [*task.examples, *task.examples_hidden]
+
+        for i in range(len(tests)):
+            test = tests[i]
+
+            in_data = test['in_data']
+            out_data = test['out_data']
+
+            submission = data_one.copy()
+            submission['stdin'] = in_data
+            submission['expected_output'] = out_data
+            submission['callback_url'] = callback_url + '?' + '&'.join(f'{param}={value}'
+                                                                       for param, value in params_callback_url.items())
+
+            submissions.append(submission)
+
+        json_data = {'submissions': submissions}
+
+        r = requests.post(CheckerConfig.BATCH_SUBS_URL, headers=CheckerConfig.HEADERS, json=json_data)
+        return r
 
 
 class PupilSolutionsListForTask(Resource):
@@ -127,10 +180,15 @@ class PupilSolutionsListForTask(Resource):
         check_task_by_id(task_id)
 
         session = db_session.create_session()
+        task = session.query(Task).get(task_id)
+
         solutions = session.query(Solutions).filter(Solutions.pupil_id == pupil_id, Solutions.group_id == group_id,
-                                                    Solutions.task_id == task_id).order_by(Solutions.id)
+                                                    Solutions.task_id == task_id).order_by(Solutions.id).all()
+        tries_left = task.tries_count - len(solutions)
         return jsonify(
-            {"solutions": [solution.to_dict(only=('id', 'date_delivery', 'review_status')) for solution in solutions]})
+            {"solutions": [solution.to_dict(only=('id', 'date_delivery', 'review_status', 'solution_info')) for solution
+                           in solutions],
+             "tries_left": tries_left})
 
 
 class PupilSolutionForTask(Resource):
@@ -144,7 +202,7 @@ class PupilSolutionForTask(Resource):
         session = db_session.create_session()
         solution = session.query(Solutions).get(solution_id)
 
-        return jsonify(solution.to_dict(only=('id', 'result', 'date_delivery', 'review_status')))
+        return jsonify(solution.to_dict(only=('id', 'result', 'date_delivery', 'review_status', 'solution_info')))
 
     def post(self):
         args = parser_solution_status_change.parse_args()
@@ -165,4 +223,4 @@ class PupilSolutionForTask(Resource):
         session.merge(solution)
         session.commit()
 
-        return jsonify(solution.to_dict(only=('id', 'date_delivery', 'review_status')))
+        return jsonify(solution.to_dict(only=('id', 'date_delivery', 'review_status', 'solution_info')))

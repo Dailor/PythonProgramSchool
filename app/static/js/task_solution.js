@@ -5,9 +5,16 @@ const failed_solution = 'Не принято';
 const url_all_solutions = '/api_solutions';
 const url_solution = '/api_solution'
 
+const time_check_task = 5000;
+
+var all_solutions = {};
+
+var tries_left;
+
 var solutions_count = 0;
 var last_solution_id = null;
 var solution_identify = 'solution_'
+var solution_info_modal = $('#solutionInfo');
 
 var editor = CodeMirror(document.getElementById("codeMirror"),
                        {lineNumbers: true,
@@ -22,16 +29,44 @@ function scrollToBottomSolutionsHistory(){
 function add_solution(solution){
     solutions_count++;
     var row = `
-    <tr class="cursor-pointer" id='${solution_identify}${solution.id}' onclick=load_solution(${solution.id})>
+    <tr class="cursor-pointer" id='${solution_identify}${solution.id}' solution-id='${solution.id}' onclick=load_solution(${solution.id})>
         <th scope="row" id="solution-attempt-count">${solutions_count}</th>
         <td id="solution-date">${solution.date_delivery}</td>
         <td id="solution-status">${status_span(solution.review_status)}</td>
     </tr>
     `;
     last_solution_id = solution.id;
-    $('#solutions').append(row);
+    var row_dom_element = $(row);
+    row_dom_element.dblclick(function(event){
+        var solution_id_clicked = event.target.parentElement.getAttribute('solution-id');
+        setSolutionInfoInModal(solution_id_clicked);
+    });
+    $('#solutions').append(row_dom_element);
+
+    all_solutions[solution.id] = solution;
+    if(solution.review_status == null){
+        setCheckerOnTimer(solution.id);
+    }
 }
 
+function setSolutionInfoInModal(solution_id_clicked){
+    var solution_by_id = all_solutions[solution_id_clicked];
+    var solution_info_clicked = solution_by_id['solution_info'];
+
+    solution_info_modal.find('#modal-solution-info').html('');
+
+    if(solution_by_id.review_status == null){
+        return;
+    }
+
+    solution_info_modal.modal();
+
+    for(var key in solution_info_clicked){
+        var info_p = $('<p></p>');
+        info_p.attr('id', key);
+        info_p.text(solution_info_clicked[key]);
+    }
+}
 
 function status_span(status){
     if (status == true)
@@ -63,6 +98,12 @@ function load_all_solutions(){
                         $('#declineSolution').removeAttr('disabled');
                         }
                     scrollToBottomSolutionsHistory()
+                    tries_left = data.tries_left;
+                    $('#tries-left').html(tries_left);
+
+                    if(tries_left <= 0){
+                        $('#sendSolution').attr('disabled', true);
+                    }
                    }
     })
 }
@@ -95,3 +136,35 @@ $(document).ready(function(){
         editor.doc.cantEdit = true;
     }
 })
+
+function changeSolutionReviewStatus(solution){
+    var solution_row = $(`#${solution_identify}${solution.id}`);
+    var solution_review_status_data = solution_row.children('#solution-status');
+    solution_review_status_data.html(status_span(solution.review_status));
+    return solution_row;
+}
+
+function setCheckerOnTimer(solution_id){
+    var data = {"solution_id": solution_id};
+    $.ajax({
+        url: url_solution,
+        type: 'GET',
+        data: data,
+        success: function(data, textStatus, jqXHR){
+            var solution_before_change = all_solutions[data.id];
+
+            if(solution_before_change.review_status != data.review_status){
+                changeSolutionReviewStatus(data);
+                solution_before_change.review_status = data.review_status;
+                solution_before_change.solution_info = data.solution_info;
+            }
+
+            if(data.review_status == null){
+                    setTimeout(setCheckerOnTimer, time_check_task, solution_id)
+            }
+        },
+        error: function(textStatus){
+            console.log(textStatus);
+        }
+    })
+}
