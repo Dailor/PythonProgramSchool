@@ -12,7 +12,8 @@
     <title>{% block title %}{% endblock %}</title>
 
     <!-- Custom fonts for this template-->
-    <link href=" {{url_for('static', filename='vendor/fontawesome-free/css/all.min.css')}} " rel="stylesheet" type="text/css">
+    <link href=" {{url_for('static', filename='vendor/fontawesome-free/css/all.min.css')}} " rel="stylesheet"
+          type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
           rel="stylesheet">
 
@@ -67,23 +68,30 @@
 </a>
 
 <!-- Logout Modal-->
-<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" style="display: none;" aria-hidden="true">
+<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     style="display: none;" aria-hidden="true">
     <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Уверены что хотите выйти?</h5>
-          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">×</span>
-          </button>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Уверены что хотите выйти?</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">Нажмите "Выйти" если вы хотите закончить сессию.</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">Отмена</button>
+                <a class="btn btn-primary" href="/logout">Выйти</a>
+            </div>
         </div>
-        <div class="modal-body">Нажмите "Выйти" если вы хотите закончить сессию.</div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" type="button" data-dismiss="modal">Отмена</button>
-          <a class="btn btn-primary" href="/logout">Выйти</a>
-        </div>
-      </div>
     </div>
-  </div>
+</div>
+
+{% if current_user.is_authenticated %}
+    {% if current_user.is_teacher %}
+        {% include '/teacher/add_topic_modal.html' %}
+    {% endif %}
+{% endif %}
 <!-- Bootstrap core JavaScript-->
 <script src="{{ url_for('static', filename='vendor/jquery/jquery.min.js') }}"></script>
 <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
@@ -99,5 +107,10 @@
 {# Тут дополнительные js коды #}
 
 {% endblock %}
+
+{% if current_user.is_teacher %}
+<script src="{{ url_for('static', filename='js/teacher/add_topic.js', version=STATIC_FILES_VERSION) }}"></script>
+{% endif %}
+
 </body>
 </html>

@@ -55,7 +55,11 @@ def lesson_page(group_id, lesson_id):
     if lesson not in group.lessons:
         abort(403)
 
-    return render_template('lesson_page.html', lesson=lesson, group_id=group_id)
+    lesson_to_dict_only = (
+        'id', 'name', 'tasks.id', 'tasks.name', 'tasks.description', 'tasks.time_sec', 'tasks.memory_mb',
+        'tasks.examples')
+
+    return render_template('lesson_page.html', lesson=lesson.to_dict(only=lesson_to_dict_only), group_id=group_id)
 
 
 @blueprint.route('/groups/<int:group_id>/lesson/<int:lesson_id>/task/<int:task_id>')
@@ -69,5 +73,7 @@ def solve_task_page(group_id, lesson_id, task_id):
     pupil_id = current_user.pupil.id
 
     check_group_permission(group)
+
+    task_to_dict_only = ('id', 'name', 'time_sec', 'memory_mb', 'tries_count', 'examples')
 
     return render_template('solution_page.html', task=task, group_id=group_id, pupil_id=pupil_id)

@@ -26,3 +26,6 @@
     text-decoration: none; /* Добавляем подчеркивание */
 }
 
+.task-name{
+    word-break: break-all;
+}

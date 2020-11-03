@@ -20,12 +20,13 @@ fileConfig(config.config_file_name)
 
 import sys
 
-path_to_project = r'D:\Python projects\MyProjects\PythonProgramSchool\app'
+path_to_project = r'D:\Python projects\MyProjects\PythonProgramSchool'
 sys.path.insert(0, path_to_project)
-from models.db_session import SqlAlchemyBase
+
+from app.models.db_session import SqlAlchemyBase
+import app.models.__all_models
 
 target_metadata = SqlAlchemyBase.metadata
-
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

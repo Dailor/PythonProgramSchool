@@ -23,14 +23,16 @@ const group_id = {{group_id}};
 const is_teacher = {{ ('true' if current_user.is_teacher else 'false')|safe}};
 
 
+
+
 </script>
 
-<script src="{{url_for('static', filename='js/task_solution.js', version=2)}}"></script>
+<script src="{{url_for('static', filename='js/task_solution.js', version=STATIC_FILES_VERSION)}}"></script>
 
 {% if current_user.is_pupil %}
-    <script src="{{url_for('static', filename='js/pupil/task_solution.js', version=1)}}"></script>
+<script src="{{url_for('static', filename='js/pupil/task_solution.js', version=STATIC_FILES_VERSION)}}"></script>
 {% else %}
-    <script src="{{url_for('static', filename='js/teacher/task_solution.js', version=1)}}"></script>
+<script src="{{url_for('static', filename='js/teacher/task_solution.js', version=STATIC_FILES_VERSION)}}"></script>
 {% endif %}
 
 {% endblock %}
@@ -42,6 +44,11 @@ const is_teacher = {{ ('true' if current_user.is_teacher else 'false')|safe}};
     <div class="card-body">
         <div>
             <div>
+                <div>
+                    <h4>Ограничения</h4>
+                    <h6>Память: <span id="memoryLimit">{{task.memory_mb}}</span> мегабайт</h6>
+                    <h6>Время: <span id="timeLimit">{{task.time_sec}}</span> секунд</h6>
+                </div>
                 <div>
                     <h4>Описание</h4>
                     <p class="my-2" id="taskDescription">{{task.description|safe}}</p>
@@ -56,48 +63,79 @@ const is_teacher = {{ ('true' if current_user.is_teacher else 'false')|safe}};
                         </tr>
                         </thead>
                         <tbody id="dataExamples">
+                        {% for example in task.examples %}
                         <tr class="rowExample">
-                            <td class="p-0 dataIn">{{task.in_data}}</td>
-                            <td class="p-0 dataOut">{{task.out_data}}</td>
+                            <td>{{example['in_data']}}</td>
+                            <td>{{example['out_data']}}</td>
                         </tr>
+                        {% endfor %}
                         </tbody>
                     </table>
                 </div>
-                <div class="row mt-4">
-                    <div class="col-6">
-                        <h4>Решение</h4>
-                        <div class="mr-2 mt-2" id="codeMirror"></div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-6">
+                    <h4>Решение</h4>
+                    <div class="mr-2 mt-2" id="codeMirror"></div>
 
-                        {% if current_user.is_teacher %}
-                        <h4 class="my-4">Отправил: {{pupil_full_name}}</h4>
-                        {% endif %}
 
-                        {% if current_user.is_pupil %}
-                        <button id="sendSolution" class="btn btn-primary my-3" onclick="send_solution()">Отправить
-                        </button>
-                        {% else %}
-                        <div>
-                            <button id="acceptSolution" class="btn btn-success my-3" onclick="acceptSolution()" disabled>Принять</button>
-                            <button id="declineSolution" class="btn btn-danger my-3" onclick="declineSolution()" disabled>Отклонить</button>
-                        </div>
-                        {% endif %}
+                </div>
+                <div class="col-6">
+                    <h4>История решений</h4>
+                    <div class="table-responsive table-bordered solutions-history">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th scope="col">Попытка</th>
+                                <th scope="col">Дата</th>
+                                <th scope="col">Статус</th>
+                            </tr>
+                            </thead>
+                            <tbody id="solutions">
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="col-6">
-                        <h4>История решений</h4>
-                        <div class="table-responsive table-bordered solutions-history">
-                            <table class="table table-hover">
-                                <thead>
-                                <tr>
-                                    <th scope="col">Попытка</th>
-                                    <th scope="col">Дата</th>
-                                    <th scope="col">Статус</th>
-                                </tr>
-                                </thead>
-                                <tbody id="solutions">
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                </div>
+            </div>
+            <div>
+                {% if current_user.is_teacher %}
+                <h4 class="my-4">Отправил: {{pupil_full_name}}</h4>
+                {% endif %}
+                <p>Осталось попыток: <span id="tries-left"></span></p>
+            </div>
+            <div>
+                {% if current_user.is_pupil %}
+                <button id="sendSolution" class="btn btn-primary" onclick="send_solution()">Отправить
+                </button>
+                {% else %}
+                <div>
+                    <button id="acceptSolution" class="btn btn-success my-3" onclick="acceptSolution()" disabled>
+                        Принять
+                    </button>
+                    <button id="declineSolution" class="btn btn-danger my-3" onclick="declineSolution()" disabled>
+                        Отклонить
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="solutionInfo" tabindex="-1" role="dialog"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Информация о решении</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-solution-info">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Закрыть</button>
                 </div>
             </div>
         </div>

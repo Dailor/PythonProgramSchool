@@ -6,7 +6,8 @@
 
 <link href="{{url_for('static', filename='vendor/datatables.select/select.bootstrap4.css')}}" rel="stylesheet">
 
-<link href="{{url_for('static', filename='vendor/datatables.buttons/css/buttons.bootstrap4.min.css')}}" rel="stylesheet">
+<link href="{{url_for('static', filename='vendor/datatables.buttons/css/buttons.bootstrap4.min.css')}}"
+      rel="stylesheet">
 {% endblock %}
 
 {% block javascript %}
@@ -30,24 +31,88 @@
 <!--JS код для этой страницы-->
 <script>
     topic_id = {{topic_id}};
+    topic_name = {{topic_name | tojson}};
+
+
+
+
 </script>
 
-<script src="{{ url_for('static', filename='js/teacher/topics-lessons-table.js', version=1) }}"></script>
+<script src="{{ url_for('static', filename='js/teacher/topics-lessons-table.js', version=STATIC_FILES_VERSION) }}"></script>
+<script src="{{ url_for('static', filename='js/teacher/delete_topic.js', version=STATIC_FILES_VERSION) }}"></script>
+<script src="{{ url_for('static', filename='js/teacher/edit_topic.js', version=STATIC_FILES_VERSION) }}"></script>
 {% endblock %}
 
 {% block content %}
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">{{topic_name}}</h6>
+        <div class="row justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">{{topic_name}}</h6>
+            <div>
+                <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#editTopic">Изменить</button>
+                <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteTopic">Удалить</button>
+            </div>
+        </div>
     </div>
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                 <tbody>
-
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
+<div class="modal" tabindex="-1" role="dialog" id="deleteTopic">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Уверены что хотите удалить категорию "{{topic_name}}"?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <span>Нажмите удалить если уверены в своих действиях.</span>
+                    <span class="text-warning">Восстановить удаленную категорию не получится !</span>
+                </div>
+                <p class="text-danger mt-4 mb-0" id="delete-topic-error"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" onclick="ajax_delete_topic()">Удалить</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="editTopic">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Изменить категорию</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="return false">
+                    <div class="form-group">
+                        <label for="inputTopicEditName">Название</label>
+                        <input type="text" class="form-control" id="inputTopicEditName"
+                               placeholder="Название">
+                        <span class="text-danger" id="edit-topic-error"></span>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="ajax_edit_topic()">Изменить</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

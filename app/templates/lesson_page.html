@@ -2,7 +2,7 @@
 {% block title %}{{lesson.name}}{% endblock %}
 
 {% block style %}
-<link href="{{url_for('static', filename='css/lesson_page.css', version=2)}}" rel="stylesheet">
+<link href="{{url_for('static', filename='css/lesson_page.css', version=STATIC_FILES_VERSION)}}" rel="stylesheet">
 {% endblock %}
 
 {% block javascript %}
@@ -12,16 +12,17 @@
         src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML"></script>
 
 <script>
-lesson = {{lesson.to_dict()|tojson}};
+lesson = {{lesson|tojson}};
 group_id = {{group_id}};
 
 
-</script>
 
+</script>
+<script src="{{ url_for('static', filename='js/lesson_page.js', version=STATIC_FILES_VERSION) }}"></script>
 {% if current_user.is_teacher %}
-<script src="{{ url_for('static', filename='js/teacher/lesson_page.js', version=2) }}"></script>
+<script src="{{ url_for('static', filename='js/teacher/lesson_page.js', version=STATIC_FILES_VERSION) }}"></script>
 {% else %}
-<script src="{{ url_for('static', filename='js/pupil/lesson_page.js',version=2) }}"></script>
+<script src="{{ url_for('static', filename='js/pupil/lesson_page.js',version=STATIC_FILES_VERSION) }}"></script>
 {% endif %}
 
 {% endblock %}
@@ -48,42 +49,53 @@ group_id = {{group_id}};
                 <div class="task card-body px-0 pb-0">
                     {% for task in lesson.tasks %}
                     <div class="card" id="{{loop.index0}}">
-                        <div class="card-header py-3 d-flex justify-content-between" onclick="task_results({{loop.index0}})">
-                            <h5 class="m-0 font-weight-bold text-secondary">{{task.name}}</h5>
-                            <span id="arrow" class="fa fa-angle-{{'down' if current_user.is_teacher else 'left'}} fa-lg"></span>
+                        <div class="card-header py-3 d-flex justify-content-between"
+                             onclick="task_results({{loop.index0}})">
+                            <h5 class="m-0 font-weight-bold text-secondary task-name">{{task.name}}</h5>
+                            <span id="arrow"
+                                  class="fa fa-angle-{{'down' if current_user.is_teacher else 'left'}} fa-lg"></span>
                         </div>
-                        <div class="card-body" hidden {{'selected' if current_user.is_pupil else ''}}>
-                            {% if not current_user.is_pupil %}
-                            <div class="waiting-check-pupils task-results">
-                                <h4 class="text-warning">Ждут проверки</h4>
-                                <ul class="list-group"></ul>
-                            </div>
-                            <div class="my-4 success-passed-pupils task-results">
-                                <h4 class="text-success">Решили</h4>
-                                <ul class="list-group"></ul>
-                            </div>
-                            <div class="my-4 failed-pupils task-results">
-                                <h4 class="text-danger">Не решили</h4>
-                                <ul class="list-group"></ul>
-                            </div>
-                            <div class="not-passed-pupils task-results">
-                                <h4 class="text-danger">Не сдали</h4>
-                                <ul class="list-group"></ul>
-                            </div>
-                            {% endif %}
+                        <div class="card-body" hidden {{
+                        'selected' if current_user.is_pupil else ''}}>
+                        {% if not current_user.is_pupil %}
+                        <div class="waiting-check-pupils task-results">
+                            <h4 class="text-warning">Ждут проверки</h4>
+                            <ul class="list-group"></ul>
                         </div>
+                        <div class="my-4 success-passed-pupils task-results">
+                            <h4 class="text-success">Решили</h4>
+                            <ul class="list-group"></ul>
+                        </div>
+                        <div class="my-4 failed-pupils task-results">
+                            <h4 class="text-danger">Не решили</h4>
+                            <ul class="list-group"></ul>
+                        </div>
+                        <div class="not-passed-pupils task-results">
+                            <h4 class="text-danger">Не сдали</h4>
+                            <ul class="list-group"></ul>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endfor %}
                 </div>
+                {% endfor %}
             </div>
         </div>
-        <div class="col selected_task" hidden>
-            <div class="card shadow">
-                <div class="card-header"><h4 id="taskName" class="m-0 font-weight-bold text-info"></h4>
+    </div>
+    <div class="col selected_task" hidden>
+        <div class="card shadow">
+            <div class="card-header"><h4 id="taskName" class="m-0 font-weight-bold text-info"></h4>
+            </div>
+            <div class="card-body">
+                <div>
+                    <h4>Ограничения</h4>
+                    <h6>Память: <span id="memoryLimit"></span> мегабайт</h6>
+                    <h6>Время: <span id="timeLimit"></span> секунд</h6>
                 </div>
-                <div class="card-body">
+                <div class="task-info-block">
                     <h4>Описание</h4>
                     <p class="my-2" id="taskDescription"></p>
+                </div>
+                <div class="task-info-block">
                     <h4>Примеры: </h4>
                     <table border="1" class="w-100">
                         <thead>
@@ -97,13 +109,16 @@ group_id = {{group_id}};
                         </tr>
                         </tbody>
                     </table>
-                    {% if current_user.is_pupil %}
-                    <button class="btn btn-success mt-3">Решить</button>
-                    {% endif %}
                 </div>
+                {% if current_user.is_pupil %}
+                <div class="task-info-block">
+                    <button class="btn btn-success mt-3">Решить</button>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
+</div>
 
 </div>
 {% endblock %}

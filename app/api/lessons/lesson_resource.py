@@ -1,3 +1,5 @@
+from app.config_app import CheckerConfig
+
 from app.api.topics.topic_resource import check_topic_by_id
 from app.api.group.group_resource import check_group_by_id
 
@@ -5,7 +7,7 @@ from ...models import db_session
 from app.models.group import Group
 from app.models.topic import Topic
 from app.models.lesson import Lesson
-from app.models.task import Task, TaskCheckMethods
+from app.models.task import Task
 
 from .parser import parser, parser_lesson_available
 
@@ -43,13 +45,29 @@ class LessonsListResource(Resource):
         lesson.html = args['html_page']
 
         for task_dict in args['tasks']:
+            time_limit = task_dict['time_limit']
+            memory_limit = task_dict['memory_limit']
+            tries_limit = task_dict['tries_limit']
+            language_id = task_dict['language_id']
+
+            if time_limit > CheckerConfig.CPU_TIME_LIMIT_MAX:
+                abort(400, error=f"Не соблюден лимит по времени {CheckerConfig.CPU_TIME_LIMIT_MAX}")
+
+            if memory_limit > CheckerConfig.MEMORY_LIMIT_MAX_MB:
+                abort(400, error=f"Не соблюден лимит по памяти {CheckerConfig.MEMORY_LIMIT_MAX_MB}")
+
             task = Task()
 
             task.name = task_dict['name']
             task.description = task_dict['description']
-            task.in_data = task_dict['in_data']
-            task.out_data = task_dict['out_data']
-            task.type_check = TaskCheckMethods.MANUAL_CHECK
+            task.solutions = task_dict['solutions']
+            task.examples = task_dict['examples']
+            task.examples_hidden = task_dict['examples_hidden']
+            task.api_check = task_dict['api_check']
+            task.time_sec = time_limit
+            task.memory_mb = memory_limit
+            task.tries_count = tries_limit
+            task.language_id = language_id
 
             lesson.tasks.append(task)
 
@@ -85,13 +103,31 @@ class LessonResource(Resource):
         lesson.html = args['html_page']
 
         for task_dict in args['tasks']:
+            time_limit = task_dict['time_limit']
+            memory_limit = task_dict['memory_limit']
+            tries_limit = task_dict['tries_limit']
+            language_id = task_dict['language_id']
+
+            if time_limit > CheckerConfig.CPU_TIME_LIMIT_MAX:
+                abort(400, error=f"Не соблюден лимит по времени {CheckerConfig.CPU_TIME_LIMIT_MAX}")
+
+            if memory_limit > CheckerConfig.MEMORY_LIMIT_MAX_MB:
+                abort(400, error=f"Не соблюден лимит по памяти {CheckerConfig.MEMORY_LIMIT_MAX_MB}")
+
             task = Task()
 
             task.name = task_dict['name']
             task.description = task_dict['description']
-            task.in_data = task_dict['in_data']
-            task.out_data = task_dict['out_data']
-            task.type_check = TaskCheckMethods.MANUAL_CHECK
+            task.solutions = task_dict['solutions']
+            task.examples = task_dict['examples']
+            task.examples_hidden = task_dict['examples_hidden']
+            task.api_check = task_dict['api_check']
+
+            task.time_sec = time_limit
+            task.memory_mb = memory_limit
+            task.tries_count = tries_limit
+
+            task.language_id = language_id
 
             lesson.tasks.append(task)
 

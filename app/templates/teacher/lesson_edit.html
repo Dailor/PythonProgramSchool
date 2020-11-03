@@ -9,8 +9,11 @@
 
 <!--JS код для этой страницы-->
 <script>
-    topic_id = {{topic_id}};
-    http_request_type = '{{http_request_type}}';
+    var topic_id = {{topic_id}};
+    var http_request_type = '{{http_request_type}}';
+
+    const time_limit_max = {{time_limit_max}};
+    const memory_limit_max = {{memory_limit_max}};
 
     {% if lesson %}
         lesson = {{lesson|tojson}};
@@ -19,26 +22,34 @@
     {% endif %}
 
 
+
 </script>
 
 <script src="{{ url_for('static', filename='vendor/ckeditor/ckeditor.js') }}"></script>
 
-<script src="{{ url_for('static', filename='js/teacher/lesson_edit.js', version=1) }}"></script>
+<script src="{{ url_for('static', filename='js/teacher/lesson_edit.js', version=STATIC_FILES_VERSION) }}"></script>
 {% endblock %}
 
 {% block content %}
 <h3 class="h3 mb-3 text-gray-800">{{page_type}} урок.</h3>
 <form onsubmit="return send_data()">
     <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h4 class="m-0 font-weight-bold text-primary">Основные Данные урока</h4>
+        <div class="card-header py-3">
+            <h4 class="m-0 font-weight-bold text-primary">Основные Данные урока</h4>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label for="lessonName">Название урока</label>
+                <input name="lessonName" type="text" class="form-control" id="lessonName" required>
             </div>
-            <div class="card-body">
-                <div class="form-group">
-                    <label for="lessonName">Название урока</label>
-                    <input name="lessonName" type="text" class="form-control" id="lessonName" required>
-                </div>
+            <div class="form-group">
+                <select class="form-control" id="programming-language">
+                    {% for language in ProgrammingLanguage.ALL %}
+                    <option value="{{language[1]}}">{{language[0]}}</option>
+                    {% endfor %}
+                </select>
             </div>
+        </div>
     </div>
 
     <div id="tasks"></div>

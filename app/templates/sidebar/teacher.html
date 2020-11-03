@@ -22,6 +22,8 @@
             {% for topic in current_user.teacher.topics%}
             <a class="collapse-item" href="/teacher/topics/{{topic.id}}">{{topic.name}}</a>
             {% endfor %}
+            <hr>
+            <button class="btn collapse-item" data-toggle="modal" data-target="#add_topic">Добавить</button>
         </div>
     </div>
 </li>

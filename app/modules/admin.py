@@ -1,3 +1,6 @@
+from app.models import db_session
+from app.models.__all_models import Topic
+
 from app.api.user.user_resource import UserListResource, UserResource, RoleSetterResource
 from app.api.group.group_resource import GroupListResource, GroupResource, GroupsToDict
 from app.api.teacher.teacher_resource import TeacherListResource, TeacherDictIdToFullName, TeacherResource
@@ -70,9 +73,14 @@ def subjects_table():
 
 @blueprint.route('/groups')
 def groups_table():
+    session = db_session.create_session()
+
     teachers_dict = TeacherDictIdToFullName().teachers_dict()
     subjects_dict = SubjectDictIdToName().subjects_dict()
-    return render_template("admin/groups.html", teachers_dict=teachers_dict, subjects_dict=subjects_dict)
+    topics_dict = {topic.id: topic.name for topic in session.query(Topic).all()}
+
+    return render_template("admin/groups.html", teachers_dict=teachers_dict, subjects_dict=subjects_dict,
+                           topics_dict=topics_dict)
 
 
 @blueprint.route('/topics')

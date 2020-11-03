@@ -91,12 +91,16 @@ columns = [{id: 'id',
             },
 
             {id: 'topics',
-            data: 'topics_list',
+            data: 'topics_id_list',
             title: "Категории",
-            type: 'readonly',
+            type: 'select',
+            select2 : { width: "100%",
+                        theme: 'bootstrap4'},
+            multiple : true,
+            options: topics_dict,
             render: function(data, type, row, meta){
                         if (data == null || row == null) return null;
-                        return data.map(name => wrap_in_tag('div', name)).join('\n');
+                        return data.map(topic_id => wrap_in_tag('div', topics_dict[topic_id])).join('\n');
             }}];
 
 buttons = [{text: 'Добавить',
@@ -189,11 +193,12 @@ $(document).ready(function() {
             $.ajax({
                 url: url_api_groups,
                 type: 'PUT',
-                data: rowdata,
+                data: JSON.stringify(rowdata),
                 success: success,
                 error: function(jqXHR, textStatus, errorThrown){
                     error_ajax_crud(error, jqXHR, textStatus, errorThrown);
                 },
+                contentType: "application/json; charset=utf-8",
             });
         },
 
@@ -201,11 +206,12 @@ $(document).ready(function() {
             $.ajax({
                 url: url_api_groups + '/' + rowdata.id,
                 type: 'POST',
-                data: rowdata,
+                data: JSON.stringify(rowdata),
                 success: success,
                 error: function(jqXHR, textStatus, errorThrown){
                     error_ajax_crud(error, jqXHR, textStatus, errorThrown);
-                    }
+                    },
+                contentType: "application/json; charset=utf-8",
                 })},
 
         onDeleteRow: function(datatable, rowdata, success, error) {

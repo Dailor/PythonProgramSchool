@@ -5,6 +5,7 @@ from app.models import db_session
 from app.modules import admin, pupil, teacher
 
 from app.api.task.task_resource import PupilSolutionForTask, PupilSolutionsListForTask
+from app.api.solution_checker.solution_checker_resource import SolutionCheckerResource
 
 from flask import Flask
 
@@ -13,13 +14,11 @@ from flask_restful import Api
 from flask_recaptcha import ReCaptcha
 from flask_mail import Mail
 
-app = Flask(__name__)
-app.config.from_object(config_app.BaseConfig)
-
-
-@app.teardown_appcontext
-def shutdown_session(exception=None):
-    db_session.__factory.remove()
+app = None
+recaptcha = None
+login_manager = None
+api = None
+mail = None
 
 
 def init_db():
@@ -42,21 +41,33 @@ def blueprint_routes_register():
 def api_register():
     api.add_resource(PupilSolutionForTask, '/api_solution')
     api.add_resource(PupilSolutionsListForTask, '/api_solutions')
+    api.add_resource(SolutionCheckerResource, config_app.CheckerConfig.CALLBACK_ADDRESS)
+
 
 
 def init_app():
+    app.add_template_global(name='STATIC_FILES_VERSION', f=app.config['STATIC_FILES_VERSION'])
+
     init_db()
     init_additions()
     blueprint_routes_register()
     api_register()
 
 
-recaptcha = ReCaptcha()
-login_manager = LoginManager()
-api = Api(app)
-mail = Mail(app)
+def main():
+    global app, api, recaptcha, login_manager, mail
 
-init_app()
+    app = Flask(__name__)
+    app.config.from_object(config_app.DevelopmentConfig)
 
-from app import routes
-from app import login_manager_init
+    recaptcha = ReCaptcha()
+    login_manager = LoginManager()
+    api = Api(app)
+    mail = Mail(app)
+
+    init_app()
+
+    from app import routes
+    from app import login_manager_init
+
+    app.run(host=app.config["HOST"], port=app.config["PORT"], threaded=False)

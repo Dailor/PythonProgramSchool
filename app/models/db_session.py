@@ -30,6 +30,8 @@ def global_init(debug):
     engine = sa.create_engine(conn_str, echo=debug, pool_size=50, max_overflow=0)
     __factory = orm.scoped_session(orm.sessionmaker(bind=engine))
 
+    from . import __all_models
+
     SqlAlchemyBase.metadata.create_all(engine)
 
 
