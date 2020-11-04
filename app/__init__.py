@@ -28,6 +28,13 @@ def init_db():
 
 
 def init_additions():
+    global api, recaptcha, login_manager, mail
+
+    recaptcha = ReCaptcha()
+    login_manager = LoginManager()
+    api = Api(app)
+    mail = Mail(app)
+
     recaptcha.init_app(app)
     login_manager.init_app(app)
 
@@ -44,8 +51,7 @@ def api_register():
     api.add_resource(SolutionCheckerResource, config_app.CheckerConfig.CALLBACK_ADDRESS)
 
 
-
-def init_app():
+def load_app():
     app.add_template_global(name='STATIC_FILES_VERSION', f=app.config['STATIC_FILES_VERSION'])
 
     init_db()
@@ -54,18 +60,16 @@ def init_app():
     api_register()
 
 
-def get_app():
-    global app, api, recaptcha, login_manager, mail
+def init_app():
+    global app
+
+    if app is not None:
+        return app
 
     app = Flask(__name__)
-    app.config.from_object(config_app.DevelopmentConfig)
+    app.config.from_object(config_app.BaseConfig)
 
-    recaptcha = ReCaptcha()
-    login_manager = LoginManager()
-    api = Api(app)
-    mail = Mail(app)
-
-    init_app()
+    load_app()
 
     from app import routes
     from app import login_manager_init

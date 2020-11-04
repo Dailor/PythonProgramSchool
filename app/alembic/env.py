@@ -19,6 +19,7 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 
 import sys
+
 path_to_project = r'/var/www/school_web/PythonProgramSchool/'
 sys.path.insert(0, path_to_project)
 

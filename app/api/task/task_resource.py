@@ -1,7 +1,7 @@
 from app.config_app import CheckerConfig
 
-from app.models.task import Task, Solutions, TaskCheckStatusString, TaskCheckStatus, TaskInfoFields
-from app.models.group import Group
+from app.models.__all_models import Task, Solutions, TaskCheckStatusString, TaskCheckStatus, TaskInfoFields, Group, \
+    SubmissionsBatch
 from ...models import db_session
 
 from app.api.group.group_resource import check_group_by_id
@@ -109,6 +109,14 @@ class SolutionsListResource(Resource):
 
         task = session.query(Task).get(task_id)
 
+        solutions_passed = session.query(Solutions).filter(Solutions.pupil_id == pupil.id,
+                                                           Solutions.group_id == group_id,
+                                                           Solutions.task_id == task_id).order_by(Solutions.id).all()
+        tries_left = task.tries_count - len(solutions_passed)
+
+        if tries_left <= 0:
+            abort(403, error='У вас закончились попытки')
+
         solution = Solutions()
         solution.task_id = task_id
         solution.group_id = group_id
@@ -118,23 +126,23 @@ class SolutionsListResource(Resource):
         task.api_check = True
 
         if task.api_check:
-            solution.solution_info = {TaskInfoFields.ACCEPT: 0,
-                                      TaskInfoFields.FAILED: 0,
-                                      TaskInfoFields.COUNT: task.get_tests_count()}
+            submission_batch = SubmissionsBatch()
+            submission_batch.solution = solution
+            submission_batch.all_tasks_count = task.get_tests_count()
+            session.flush()
+            self.send_task_to_checker(solution, task, submission_batch.id)
 
-        session.add(session.merge(solution))
+        session.add(submission_batch)
+        session.add(solution)
         session.commit()
-
-        if task.api_check:
-            self.send_task_to_checker(solution, task)
 
         return jsonify({'success': 'success', **solution.to_dict(only=('id', 'date_delivery', 'review_status'))})
 
-    def send_task_to_checker(self, solution, task):
+    def send_task_to_checker(self, solution, task, submission_batch_id):
         callback_url = CheckerConfig.CALLBACK_URL
         params_callback_url = {
             'SECRET_KEY': CheckerConfig.SECRET_KEY,
-            'solution_id': solution.id
+            'submission_batch_id': submission_batch_id
         }
 
         data_one = {'source_code': solution.result,
@@ -186,7 +194,8 @@ class PupilSolutionsListForTask(Resource):
                                                     Solutions.task_id == task_id).order_by(Solutions.id).all()
         tries_left = task.tries_count - len(solutions)
         return jsonify(
-            {"solutions": [solution.to_dict(only=('id', 'date_delivery', 'review_status', 'solution_info')) for solution
+            {"solutions": [solution.to_dict(only=('id', 'date_delivery', 'review_status', 'solution_info', 'result'))
+                           for solution
                            in solutions],
              "tries_left": tries_left})
 

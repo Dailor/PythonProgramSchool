@@ -51,7 +51,7 @@ function add_solution(solution){
 
 function setSolutionInfoInModal(solution_id_clicked){
     var solution_by_id = all_solutions[solution_id_clicked];
-    var solution_info_clicked = solution_by_id['solution_info'];
+    var solution_info_clicked = solution_by_id.solution_info;
 
     solution_info_modal.find('#modal-solution-info').html('');
 
@@ -61,11 +61,32 @@ function setSolutionInfoInModal(solution_id_clicked){
 
     solution_info_modal.modal();
 
-    for(var key in solution_info_clicked){
-        var info_p = $('<p></p>');
-        info_p.attr('id', key);
-        info_p.text(solution_info_clicked[key]);
-    }
+    var solution_info_modal_body = solution_info_modal.find('#modal-solution-info');
+
+    var info_p;
+    info_p = $('<p></p>');
+    info_p.text(`Всего тестов: ${solution_info_clicked.tests_count}`);
+    solution_info_modal_body.append(info_p);
+
+    info_p = $('<p></p>');
+    info_p.text(`Пройдено: ${solution_info_clicked.passed}`);
+    solution_info_modal_body.append(info_p);
+
+    info_p = $('<p></p>');
+    info_p.text(`Не пройдено: ${solution_info_clicked.failed}`);
+    solution_info_modal_body.append(info_p);
+
+    info_p = $('<p></p>');
+    info_p.text(`Максимальное время: ${solution_info_clicked.max_time} секунд`);
+    solution_info_modal_body.append(info_p);
+
+    info_p = $('<p></p>');
+    info_p.text(`Максимальное потребление памяти: ${solution_info_clicked.max_memory} МБ`);
+    solution_info_modal_body.append(info_p);
+
+    info_p = $('<p></p>');
+    info_p.text(`Ошибки: ${solution_info_clicked.errors}`);
+    solution_info_modal_body.append(info_p);
 }
 
 function status_span(status){
@@ -111,16 +132,10 @@ function load_all_solutions(){
 function load_solution(solution_id){
     var data = {"solution_id": solution_id};
 
-    $.ajax({
-        url: url_solution,
-        type: 'GET',
-        data: data,
-        success: function(data, textStatus, jqXHR){
-            set_solve_in_mirror_code(data.result);
-        }
-    })
+    set_solve_in_mirror_code(all_solutions[solution_id].result);
+
     if(last_solution_id != null){
-        $(`#${solution_identify}${last_solution_id}`).css('background-color', '#FFFFFF');
+        $('#solutions').find('tr').css('background-color', '#FFFFFF')
     }
     $(`#${solution_identify}${solution_id}`).css('background-color', '#DEDEDE');
     last_solution_id = solution_id;
