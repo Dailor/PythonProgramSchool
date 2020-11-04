@@ -48,7 +48,7 @@ class LessonsListResource(Resource):
             time_limit = task_dict['time_limit']
             memory_limit = task_dict['memory_limit']
             tries_limit = task_dict['tries_limit']
-            language_id = task_dict['language_id']
+            language_id = args['language_id']
 
             if time_limit > CheckerConfig.CPU_TIME_LIMIT_MAX:
                 abort(400, error=f"Не соблюден лимит по времени {CheckerConfig.CPU_TIME_LIMIT_MAX}")
@@ -97,6 +97,7 @@ class LessonResource(Resource):
         session = db_session.create_session()
 
         lesson = session.query(Lesson).get(lesson_id)
+        [session.delete(task) for task in lesson.tasks]
         lesson.tasks = []
 
         lesson.name = args['name']
@@ -106,7 +107,7 @@ class LessonResource(Resource):
             time_limit = task_dict['time_limit']
             memory_limit = task_dict['memory_limit']
             tries_limit = task_dict['tries_limit']
-            language_id = task_dict['language_id']
+            language_id = args['language_id']
 
             if time_limit > CheckerConfig.CPU_TIME_LIMIT_MAX:
                 abort(400, error=f"Не соблюден лимит по времени {CheckerConfig.CPU_TIME_LIMIT_MAX}")

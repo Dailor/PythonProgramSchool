@@ -4,6 +4,7 @@ from . import teacher
 from . import subject
 from . import topic
 from . import task
+from . import submission
 from . import lesson
 from . import group
 
@@ -13,5 +14,6 @@ from .teacher import *
 from .subject import *
 from .topic import *
 from .task import *
+from .submission import *
 from .lesson import *
 from .group import *

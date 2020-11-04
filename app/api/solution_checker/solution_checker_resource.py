@@ -1,5 +1,5 @@
 from app.models import db_session
-from app.models.__all_models import Submission, Solutions, ApiCheckAnswers, TaskInfoFields
+from app.models.__all_models import Submission, Solutions, ApiCheckAnswers, TaskInfoFields, SubmissionsBatch
 from flask_restful import Resource
 from flask import request
 
@@ -7,13 +7,13 @@ from flask import request
 class SolutionCheckerResource(Resource):
     def put(self):
 
-        solution_id = int(request.args['solution_id'])
+        submission_batch_id = int(request.args['submission_batch_id'])
 
         session = db_session.create_session()
 
-        solution = session.query(Solutions).get(solution_id)
+        submission_batch = session.query(SubmissionsBatch).get(submission_batch_id)
 
-        if solution is None:
+        if submission_batch is None:
             return
 
         submission_results = request.json
@@ -27,21 +27,19 @@ class SolutionCheckerResource(Resource):
         submission.stderr = submission_results['stderr']
 
         if int(submission.status['id']) == ApiCheckAnswers.ACCEPT:
-            solution.solution_info[TaskInfoFields.ACCEPT] = solution.solution_info[TaskInfoFields.ACCEPT] + 1
+            submission_batch.accepted_tasks_count += 1
         else:
-            solution.solution_info[TaskInfoFields.FAILED] = solution.solution_info[TaskInfoFields.FAILED] + 1
+            submission_batch.failed_tasks_count += 1
 
-        checked_tests_count = solution.solution_info[TaskInfoFields.ACCEPT] + solution.solution_info[
-            TaskInfoFields.FAILED]
+        checked_tests_count = submission_batch.get_checked_count()
 
-        if checked_tests_count == solution.solution_info[TaskInfoFields.COUNT]:
-            if solution.solution_info[TaskInfoFields.ACCEPT] == checked_tests_count:
-                solution.review_status = True
+        if checked_tests_count == submission_batch.all_tasks_count:
+            if submission_batch.accepted_tasks_count == checked_tests_count:
+                submission_batch.solution.review_status = True
             else:
-                solution.review_status = False
+                submission_batch.solution.review_status = False
+            submission_batch.solution.solution_info = submission_batch.get_statistic()
 
-        submission.solution_id = solution_id
-
-        session.merge(solution)
-        session.add(submission)
+        submission_batch.submissions.append(submission)
+        session.merge(submission_batch)
         session.commit()

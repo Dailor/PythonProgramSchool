@@ -66,27 +66,12 @@ class Task(SqlAlchemyBase, SerializerMixin):
 
     api_check = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
 
-    lesson_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lessons.id"))
+    lesson_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lessons.id",  ondelete='CASCADE'))
 
     lesson = orm.relationship("Lesson", back_populates='tasks')
 
     def get_tests_count(self):
         return len(self.examples) + len(self.examples_hidden)
-
-
-class Submission(SqlAlchemyBase, SerializerMixin):
-    __tablename__ = 'submissions'
-
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    token_sub = sqlalchemy.Column(sqlalchemy.String)
-    solution_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('solutions.id'))
-
-    stdout = sqlalchemy.Column(sqlalchemy.String)
-    stderr = sqlalchemy.Column(sqlalchemy.String)
-
-    status = sqlalchemy.Column(sqlalchemy.JSON)
-    time = sqlalchemy.Column(sqlalchemy.Float)
-    memory = sqlalchemy.Column(sqlalchemy.Float)
 
 
 class Solutions(SqlAlchemyBase, SerializerMixin):
@@ -97,7 +82,7 @@ class Solutions(SqlAlchemyBase, SerializerMixin):
                                  nullable=False)
     group_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('groups.id'),
                                  nullable=False)
-    task_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('tasks.id'),
+    task_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('tasks.id', ondelete='CASCADE'),
                                 nullable=False)
 
     solution_info = sqlalchemy.Column(sqlalchemy.JSON)
@@ -109,4 +94,4 @@ class Solutions(SqlAlchemyBase, SerializerMixin):
     pupil = orm.relationship("Pupil", back_populates='solutions', lazy='joined')
     group = orm.relationship("Group", back_populates='solutions', lazy='joined')
     task = orm.relationship("Task")
-    submissions = orm.relationship("Submission")
+    submissions_batch = orm.relationship("SubmissionsBatch", back_populates='solution', passive_deletes=True)

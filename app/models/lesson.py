@@ -24,7 +24,7 @@ class Lesson(SqlAlchemyBase, SerializerMixin):
     topic_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("topics.id"))
 
     topic = orm.relationship("Topic", back_populates="lessons")
-    tasks = orm.relationship("Task", back_populates='lesson')
+    tasks = orm.relationship("Task", back_populates='lesson', passive_deletes=True)
     groups = orm.relationship('Group', secondary='lesson_to_group', back_populates='lessons')
 
     def __eq__(self, other):
