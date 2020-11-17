@@ -136,7 +136,12 @@ class SolutionsListResource(Resource):
         session.add(solution)
         session.commit()
 
-        return jsonify({'success': 'success', **solution.to_dict(only=('id', 'date_delivery', 'review_status'))})
+        solutions = session.query(Solutions).filter(Solutions.pupil_id == pupil.id, Solutions.group_id == group_id,
+                                                    Solutions.task_id == task_id).order_by(Solutions.id).all()
+        tries_left = task.tries_count - len(solutions)
+
+        return jsonify({**solution.to_dict(only=('id', 'date_delivery', 'review_status')),
+                        'tries_left': tries_left})
 
     def send_task_to_checker(self, solution, task, submission_batch_id):
         callback_url = CheckerConfig.CALLBACK_URL

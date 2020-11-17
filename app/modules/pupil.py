@@ -5,6 +5,7 @@ from app.models.task import Task
 from app.models.queries import count_tasks_solved_for_lessons_by_pupil, count_tasks_in_each_lesson_available_for_group
 
 from app.api.task.task_resource import SolutionsListResource
+from app.api.solution_on_task.solution_on_task_resource import SolutionOnTask
 
 from flask import render_template, abort, redirect
 from flask.blueprints import Blueprint
@@ -13,7 +14,9 @@ from flask_restful import Api
 
 blueprint = Blueprint('pupil', __name__, template_folder="templates", static_folder="static")
 api = Api(blueprint)
+
 api.add_resource(SolutionsListResource, '/api_solution')
+api.add_resource(SolutionOnTask, '/api_solution_on_task')
 
 
 def check_group_permission(group):
@@ -56,7 +59,7 @@ def lesson_page(group_id, lesson_id):
         abort(403)
 
     lesson_to_dict_only = (
-        'id', 'name', 'tasks.id', 'tasks.name', 'tasks.description', 'tasks.time_sec', 'tasks.memory_mb',
+        'id', 'name', 'html', 'tasks.id', 'tasks.name', 'tasks.description', 'tasks.time_sec', 'tasks.memory_mb',
         'tasks.examples')
 
     return render_template('lesson_page.html', lesson=lesson.to_dict(only=lesson_to_dict_only), group_id=group_id)

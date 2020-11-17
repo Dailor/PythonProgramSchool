@@ -13,24 +13,25 @@
 
 <script>
 lesson = {{lesson|tojson}};
-group_id = {{group_id}};
+group_id = {{group_id|safe}};
 
 
 
 </script>
 <script src="{{ url_for('static', filename='js/lesson_page.js', version=STATIC_FILES_VERSION) }}"></script>
-{% if current_user.is_teacher %}
-<script src="{{ url_for('static', filename='js/teacher/lesson_page.js', version=STATIC_FILES_VERSION) }}"></script>
-{% else %}
-<script src="{{ url_for('static', filename='js/pupil/lesson_page.js',version=STATIC_FILES_VERSION) }}"></script>
+{% if not lesson_test_view %}
+    {% if current_user.is_teacher %}
+    <script src="{{ url_for('static', filename='js/teacher/lesson_page.js', version=STATIC_FILES_VERSION) }}"></script>
+    {% else %}
+    <script src="{{ url_for('static', filename='js/pupil/lesson_page.js',version=STATIC_FILES_VERSION) }}"></script>
+    {% endif %}
 {% endif %}
-
 {% endblock %}
 
 {% block content %}
 <div class="px-5">
     <h2 class="font-weight-bold mb-3">{{lesson.name}}</h2>
-    {% if current_user.is_teacher %}
+    {% if current_user.is_teacher and not lesson_test_view%}
     <div class="lesson_available_switcher" id="lesson_available_switcher"
          onclick="set_lesson_available({{lesson.id}}, {{(not is_lesson_available)|lower}})">
         {% if not is_lesson_available %}
@@ -40,6 +41,29 @@ group_id = {{group_id}};
         {% endif %}
     </div>
     {% endif %}
+
+    <div class="lesson-material row my-3">
+        <div class="accordion col-6" id="accordionExample">
+            <div class="card">
+                <div class="card-header" id="headingOne" data-toggle="collapse" data-target="#collapseOne">
+                    <h2 class="mb-0">
+                        <button class="btn btn-link" type="button"
+                                aria-expanded="true" aria-controls="collapseOne">
+                            <h5>Материал урока</h5>
+                        </button>
+                    </h2>
+                </div>
+
+                <div id="collapseOne" class="collapse" aria-labelledby="headingOne"
+                     data-parent="#accordionExample">
+                    <div class="card-body">
+                        {{lesson.html|safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-sm-6">
             <div class="card">
@@ -55,8 +79,7 @@ group_id = {{group_id}};
                             <span id="arrow"
                                   class="fa fa-angle-{{'down' if current_user.is_teacher else 'left'}} fa-lg"></span>
                         </div>
-                        <div class="card-body" hidden {{
-                        'selected' if current_user.is_pupil else ''}}>
+                        <div class="card-body" hidden {{'selected' if current_user.is_pupil else ''}}>
                         {% if not current_user.is_pupil %}
                         <div class="waiting-check-pupils task-results">
                             <h4 class="text-warning">Ждут проверки</h4>

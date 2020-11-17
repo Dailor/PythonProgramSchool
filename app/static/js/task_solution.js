@@ -3,7 +3,8 @@ const success_solution = 'Принято';
 const failed_solution = 'Не принято';
 
 const url_all_solutions = '/api_solutions';
-const url_solution = '/api_solution'
+const url_solutions_checker = '/api_solution'
+const url_get_solution_on_task = '/pupil/api_solution_on_task';
 
 const time_check_task = 5000;
 
@@ -125,6 +126,7 @@ function load_all_solutions(){
                     if(tries_left <= 0){
                         $('#sendSolution').attr('disabled', true);
                     }
+                    getSolutionOnText();
                    }
     })
 }
@@ -160,9 +162,14 @@ function changeSolutionReviewStatus(solution){
 }
 
 function setCheckerOnTimer(solution_id){
-    var data = {"solution_id": solution_id};
+    var data = {"solutions_id": []};
+    for(var sol_id in all_solutions){
+        if(all_solutions[sol_id].review_status === null){
+            data.solutions_id.push(sol_id);
+        }
+    }
     $.ajax({
-        url: url_solution,
+        url: url_solutions_checker,
         type: 'GET',
         data: data,
         success: function(data, textStatus, jqXHR){
@@ -175,11 +182,34 @@ function setCheckerOnTimer(solution_id){
             }
 
             if(data.review_status == null){
+                    debugger;
                     setTimeout(setCheckerOnTimer, time_check_task, solution_id)
             }
         },
         error: function(textStatus){
             console.log(textStatus);
         }
-    })
+    });
+}
+
+
+function success_ajax_get_solution_on_task(data, textStatus, jqXHR){
+    var solution_block = $('#SolutionOnTask');
+    solution_block.removeAttr('hidden');
+    solution_block.find('p').html(data.solution);
+}
+
+
+function getSolutionOnText(){
+    var data = {'group_id': group_id,
+                'task_id': task_id};
+    $.ajax({
+        url: url_get_solution_on_task,
+        type: 'GET',
+        data: data,
+        success: success_ajax_get_solution_on_task,
+        error: function(jqXHR, textStatus, errorThrown){
+            console.log(textStatus);
+        }
+    });
 }

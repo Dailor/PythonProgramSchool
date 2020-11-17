@@ -35,7 +35,7 @@ def tasks_count_of_pupil_for_topic(*, pupil_id,
 
 def count_tasks_solved_for_lessons_by_pupil(*, pupil_id, group_id):
     session = db_session.create_session()
-    query = session.query(Lesson.id, func.count(Task.id))
+    query = session.query(Lesson.id, func.count(distinct(Task.id)))
     query = query.select_from(Group).filter(Group.id == group_id)
     query = query.join(Group.lessons)
     query = query.join(Lesson.tasks)
@@ -60,7 +60,7 @@ def count_tasks_in_each_lesson_available_for_group(*, group_id):
 
 def count_tasks_solved_for_lessons_by_pupils_in_group(*, group_id):
     session = db_session.create_session()
-    query = session.query(Lesson.id, Task.id, func.count(Solutions.id)).select_from(Group)
+    query = session.query(Lesson.id, Task.id, func.count(distinct(Solutions.pupil_id))).select_from(Group)
     query = query.join(Group.lessons)
     query = query.join(Lesson.tasks)
     query = query.join(Solutions, and_(Solutions.group_id == group_id, Solutions.task_id == Task.id,

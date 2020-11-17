@@ -147,7 +147,7 @@ def lesson_page(group_id, lesson_id):
     is_lesson_available = lesson in group.lessons
 
     lesson_to_dict_only = (
-        'id', 'name', 'tasks.id', 'tasks.name', 'tasks.description', 'tasks.time_sec', 'tasks.memory_mb',
+        'id', 'name', 'tasks.id', 'tasks.name', 'html', 'tasks.description', 'tasks.time_sec', 'tasks.memory_mb',
         'tasks.examples')
 
     return render_template('lesson_page.html', group_id=group.id, lesson=lesson.to_dict(only=lesson_to_dict_only),
@@ -175,3 +175,20 @@ def groups_page():
     subjects = {subject.id: subject.name for subject in session.query(Subject).all()}
 
     return render_template('/teacher/groups.html', groups=groups, topics=topics, subjects=subjects)
+
+
+@blueprint.route('/lesson_view/<int:lesson_id>')
+def lesson_page_view(lesson_id):
+    session = db_session.create_session()
+
+    lesson = session.query(Lesson).get(lesson_id)
+
+    if lesson is None:
+        abort(404)
+
+    lesson_to_dict_only = (
+        'id', 'name', 'tasks.id', 'tasks.name', 'html', 'tasks.description', 'tasks.time_sec', 'tasks.memory_mb',
+        'tasks.examples')
+
+    return render_template('lesson_page.html', lesson_test_view=True, lesson=lesson.to_dict(only=lesson_to_dict_only),
+                           group_id=None)

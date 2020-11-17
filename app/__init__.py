@@ -67,7 +67,7 @@ def init_app():
         return app
 
     app = Flask(__name__)
-    app.config.from_object(config_app.BaseConfig)
+    app.config.from_object(config_app.DevelopmentConfig)
 
     load_app()
 

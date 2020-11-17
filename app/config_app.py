@@ -41,7 +41,7 @@ class DefaultAdminConfig:
 
 
 class CheckerConfig:
-    DOMAIN = "https://a77c1feef412.ngrok.io"
+    DOMAIN = "http://6ce23b2d2134.ngrok.io"
 
     CHECKER_HOST = 'http://178.159.39.154'
     BATCH_SUBS_URL = CHECKER_HOST + '/submissions/batch'
@@ -58,7 +58,7 @@ class CheckerConfig:
     HEADERS = {'X-Auth-Token': API_TOKEN}
 
 
-class BaseConfig(SecretData, StaticConfig, ReCaptchaConfig, MailConfig, CheckerConfig):
+class BaseConfig(SecretData, StaticConfig, ReCaptchaConfig, MailConfig, CheckerConfig, DefaultAdminConfig):
     DEBUG = False
     TESTING = False
 

@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="{{url_for('static', filename='vendor/codemirror/lib/codemirror.css')}}">
 <link rel="stylesheet" href="{{url_for('static', filename='vendor/codemirror/theme/neat.css')}}">
 <link href="{{url_for('static', filename='css/lessons_available.css')}}" rel="stylesheet">
+<link href="{{url_for('static', filename='css/lesson_page.css')}}" rel="stylesheet">
 {% endblock %}
 
 {% block javascript %}
@@ -21,10 +22,7 @@ const pupil_id = {{pupil_id}};
 const task_id = {{task.id}};
 const group_id = {{group_id}};
 const is_teacher = {{ ('true' if current_user.is_teacher else 'false')|safe}};
-
-
-
-
+const is_pupil = {{ ('true' if current_user.is_pupil else 'false')|safe}};
 </script>
 
 <script src="{{url_for('static', filename='js/task_solution.js', version=STATIC_FILES_VERSION)}}"></script>
@@ -49,10 +47,17 @@ const is_teacher = {{ ('true' if current_user.is_teacher else 'false')|safe}};
                     <h6>Память: <span id="memoryLimit">{{task.memory_mb}}</span> мегабайт</h6>
                     <h6>Время: <span id="timeLimit">{{task.time_sec}}</span> секунд</h6>
                 </div>
+
                 <div>
                     <h4>Описание</h4>
                     <p class="my-2" id="taskDescription">{{task.description|safe}}</p>
                 </div>
+
+                <div id="SolutionOnTask" hidden>
+                    <h4>Решение задачи</h4>
+                    <p class="my-2"></p>
+                </div>
+
                 <div class="my-4">
                     <h4>Примеры: </h4>
                     <table border="1" class="w-100">
@@ -65,8 +70,8 @@ const is_teacher = {{ ('true' if current_user.is_teacher else 'false')|safe}};
                         <tbody id="dataExamples">
                         {% for example in task.examples %}
                         <tr class="rowExample">
-                            <td>{{example['in_data']}}</td>
-                            <td>{{example['out_data']}}</td>
+                            <td class="dataIn">{{example['in_data']}}</td>
+                            <td class="dataOut">{{example['out_data']}}</td>
                         </tr>
                         {% endfor %}
                         </tbody>

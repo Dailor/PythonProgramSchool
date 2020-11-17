@@ -37,8 +37,8 @@
                     <ul class="list-group-flush p-0">
                         {% for group_id in groups %}
                         {% set group = groups[group_id] %}
-                        <li class="list-group-item d-flex justify-content-between">
-                            <a class="nav-link p-0" href="/teacher/groups/{{group_id}}/lessons">{{group['name']}}</a>
+                        <li class="list-group-item d-flex justify-content-between" id="group-data-{{group_id}}">
+                            <a class="nav-link p-0" href="/teacher/groups/{{group_id}}/lessons" id="group-name-view">{{group['name']}}</a>
                             <div>
                                 <button class="btn btn-info btn-sm" onclick="show_pupil({{group_id}})">Ученики</button>
                                 <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#change-topics" onclick="editing_group_now({{group_id}})">
@@ -109,7 +109,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
-                <button type="button" class="btn btn-primary">Сохранить</button>
+                <button type="button" class="btn btn-primary" onclick="send_changed_group()">Сохранить</button>
             </div>
         </div>
     </div>

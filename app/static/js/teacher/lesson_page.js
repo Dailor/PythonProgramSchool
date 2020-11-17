@@ -76,7 +76,6 @@ function task_results(task_index_in_lesson){
         card_prev_selected.find('.card-body').attr('hidden', true);
     }
 
-
     var card = $('#' + task_index_in_lesson);
     var card_body = card.find('.card-body');
     var is_hidden = false;
@@ -93,13 +92,10 @@ function task_results(task_index_in_lesson){
 
         load_task_block(task_index_in_lesson);
         load_task_pupil_done_info(task_index_in_lesson);
-
-
     }else{
         card.find('#arrow').removeClass('fa-angle-up').addClass('fa-angle-down');
         card_body.attr('hidden', true);
     }
-
 }
 
 function success_set_lesson_available(data, textStatus, jqXHR, lesson_id, set_status){

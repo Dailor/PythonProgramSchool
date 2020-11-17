@@ -1,5 +1,6 @@
 var url_api_topic = '/teacher/api_lesson';
 var url_data = url_api_topic + '/' + topic_id;
+var url_preview = '/teacher/lesson_view';
 
 var url_add_lesson = document.location.href + '/' + 'lesson'
 var url_delete_lesson = url_data + '/lesson/'
@@ -61,7 +62,17 @@ buttons = [{text: 'Добавить',
              name: 'delete'},
 
             {text: 'Обновить',
-             name: 'refresh'}
+             name: 'refresh'},
+
+             {extend: 'selected',
+             title: 'Предпросмотр',
+             text: 'Предпросмотр',
+             name: 'preview',
+             action: function(e, dt, node, config){
+                        var lesson_id = dt.row({'selected': true}).data().id;
+                        window.location.href= url_preview + '/' + lesson_id;
+                    }}
+
             ];
 
 error_crud_msg = "<strong>Ошибка: </strong>"

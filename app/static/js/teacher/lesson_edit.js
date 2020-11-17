@@ -183,12 +183,14 @@ function task_collection(){
 function send_data(){
     var name = $("#lessonName").val();
     var language_id = parseInt($("#programming-language").val());
+    var lessonMaterial = CKEDITOR.instances['lessonMaterial'].getData();
     var tasks = task_collection();
 
 
     var data = JSON.stringify({'name': name,
                 'tasks': tasks,
-                'language_id': language_id});
+                'language_id': language_id,
+                'html_page': lessonMaterial});
 
     console.log(data);
 
@@ -210,6 +212,12 @@ $(document).ready(function(){
     if(!lesson){
         return;
     }
+
+    CKEDITOR.replace('lessonMaterial');
+    CKEDITOR.instances['lessonMaterial'].setData(lesson.html, {callback: function() {
+                                                                                                this.checkDirty(); // true
+                                                                                            }
+                                                                                    });
 
     $('#lessonName').val(lesson.name);
 

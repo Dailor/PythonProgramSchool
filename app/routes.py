@@ -15,10 +15,12 @@ from app.utils import send_password_reset_email
 from flask import render_template, redirect, abort, flash, url_for, request
 from flask_login import login_user, logout_user, current_user, login_required
 
+from functools import wraps
 from itertools import groupby
 
 
 def redirect_if_authed(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         if current_user.is_authenticated:
             return redirect("/index")
@@ -32,8 +34,8 @@ def shutdown_session(exception=None):
     db_session.__factory.remove()
 
 
-@redirect_if_authed
 @app.route('/reset_password', methods=['GET', 'POST'])
+@redirect_if_authed
 def reset_password_request():
     form = ResetPasswordRequestForm()
     captcha_error = False
@@ -52,8 +54,8 @@ def reset_password_request():
     return render_template('reset_password_request.html', captcha_error=captcha_error, form=form)
 
 
-@redirect_if_authed
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
+@redirect_if_authed
 def reset_password(token):
     user = User.verify_reset_password_token(token)
 
@@ -78,8 +80,8 @@ def logout():
     return redirect('/login')
 
 
-@redirect_if_authed
 @app.route("/login", methods=["GET", "POST"])
+@redirect_if_authed
 def login():
     form = LoginForm()
     errors = dict()
@@ -99,8 +101,8 @@ def login():
     return render_template("login.html", form=form, **errors)
 
 
-@redirect_if_authed
 @app.route("/registration", methods=["GET", "POST"])
+@redirect_if_authed
 def registration():
     form = RegistrationForm()
     captcha_error = False
