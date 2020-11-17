@@ -41,7 +41,7 @@ class DefaultAdminConfig:
 
 
 class CheckerConfig:
-    DOMAIN = "http://6ce23b2d2134.ngrok.io"
+    DOMAIN = "https://goprog.kz"
 
     CHECKER_HOST = 'http://178.159.39.154'
     BATCH_SUBS_URL = CHECKER_HOST + '/submissions/batch'
