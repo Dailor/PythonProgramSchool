@@ -37,9 +37,9 @@
 
 <!--JS код для этой страницы-->
 <script>
-var teachers_dict = {{teachers_dict | tojson}};
-var subjects_dict = {{subjects_dict | tojson}};
-var topics_dict = {{topics_dict | tojson}}
+const teachers_dict = {{teachers_dict | tojson}};
+const subjects_dict = {{subjects_dict | tojson}};
+const courses_dict = {{courses_dict | tojson}};
 </script>
 
 <script src="{{ url_for('static', filename='js/admin/groups-table.js', version=STATIC_FILES_VERSION) }}"></script>

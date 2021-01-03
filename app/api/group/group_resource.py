@@ -1,24 +1,22 @@
+import os
+
 from app.models import db_session
-from app.models.__all_models import Group, Subject, Teacher, Topic
+from app.models.__all_models import Group, Subject, Teacher, Course
 
-from .parser import parser_admin, parser_teacher
+from .parser import parser, parser_admin
 
-from flask import jsonify, request
+from flask import jsonify
 from flask_restful import Resource, abort
 from flask_login import current_user
 
-groups_only_admin = ('id', 'name', 'is_active', 'subject_id', 'teacher_id', 'topics.id', 'topics_id_list')
-
-
-def check_group_by_id(group_id):
-    session = db_session.create_session()
-    group = session.query(Group).get(group_id)
-    if group is None:
-        abort(404, errro='Группа с {} ID не найдена'.format(group_id))
+groups_only_admin = ('id', 'name', 'is_active', 'subject_id', 'teacher_id', 'courses_id')
 
 
 class GroupListResource(Resource):
     def get(self):
+        if not current_user.is_admin:
+            return abort(403)
+
         session = db_session.create_session()
 
         groups = session.query(Group).all()
@@ -28,34 +26,40 @@ class GroupListResource(Resource):
             groups]})
 
     def put(self):
+        if not (current_user.is_admin or current_user.is_teacher):
+            return abort(403)
+
         args = parser_admin.parse_args()
         session = db_session.create_session()
 
+        courses_id_list = args['courses_id']
+
         subject = session.query(Subject).get(args['subject_id'])
         teacher = session.query(Teacher).get(args['teacher_id'])
-        topics = session.query(Topic).filter(Topic.id.in_(args['topics_id_list'])).all()
+        courses = session.query(Course).filter(Course.id.in_(courses_id_list)).all()
 
         group_same_name = session.query(Group).filter(Group.name == args['name']).first()
 
         if not subject:
-            abort(404, error="Предмета с таким ID нет")
+            return abort(404, error="Предмета с таким ID нет")
 
         if not teacher:
-            abort(404, error="Учителя с таким ID нет")
+            return abort(404, error="Учителя с таким ID нет")
 
-        if len(topics) != len(args['topics_id_list']):
-            id_topics_have = [topic.id for topic in topics]
-            id_missing = [topic_id for topic_id in args['topics_id_list'] if topic_id not in id_topics_have]
-            abort(404, error=f'Категории с {id_missing} нет')
+        if len(courses) != len(courses_id_list):
+            id_course_have = [course.id for course in courses]
+            id_missing = [course_id for course_id in courses_id_list if course_id not in id_course_have]
+            return abort(404, error=f'Категории с {id_missing} нет')
 
         if group_same_name is not None:
             abort(403, error="Группа с таким именем уже существует")
 
         group = Group()
         group.name = args['name']
+        group.generate_invite_code()
         group.teacher = teacher
         group.is_active = args['is_active']
-        group.topics = topics
+        group.courses = courses
 
         if teacher not in subject.teachers:
             subject.teachers.append(teacher)
@@ -71,46 +75,35 @@ class GroupListResource(Resource):
 
 class GroupResource(Resource):
     def get(self, group_id):
-        check_group_by_id(group_id)
-
-        session = db_session.create_session()
-        group = session.query(Group).get(group_id)
+        group = Group.get_entity_or_404(group_id)
+        group.is_have_permission(current_user)
 
         return jsonify(group.to_dict(rules=('pupils',)))
 
     def post(self, group_id):
-        check_group_by_id(group_id)
+        args = parser.parse_args()
+
+        group = Group.get_entity_or_404(group_id)
+        group.is_have_permission(current_user)
+
+        courses_id = args['courses_id']
 
         session = db_session.create_session()
 
-        if current_user.is_admin:
-            args = parser_admin.parse_args()
-            teacher = session.query(Teacher).get(args['teacher_id'])
-        elif current_user.is_teacher:
-            args = parser_teacher.parse_args()
+        if current_user.is_teacher:
             teacher = current_user.teacher
+        elif current_user.is_admin:
+            admin_args = parser_admin.parse_args()
+            teacher = session.query(Teacher).get(admin_args['teacher_id'])
 
-        subject = session.query(Subject).get(args['subject_id'])
+        subject = Subject.get_entity_or_404(args['subject_id'])
 
-        topics = session.query(Topic).filter(Topic.id.in_(args['topics_id_list'])).all()
+        courses = session.query(Course).filter(Course.id.in_(courses_id)).all()
 
-        group_same_name = session.query(Group).filter(Group.name == args['name']).first()
-
-        if not subject:
-            abort(404, error="Предмета с таким ID нет")
-
-        if not teacher:
-            abort(404, error="Учителя с таким ID нет")
-
-        if len(topics) != len(args['topics_id_list']):
-            id_topics_have = [topic.id for topic in topics]
-            id_missing = [topic_id for topic_id in args['topics_id_list'] if topic_id not in id_topics_have]
-            abort(404, error=f'Категории с {id_missing} нет')
-
-        group = session.query(Group).get(group_id)
-
-        if group_same_name is not None and group_same_name.id != group.id:
-            abort(403, error="Группа с таким именем уже существует")
+        if len(courses) != len(courses_id):
+            id_courses_have = [course.id for course in courses]
+            id_missing = [course_id for course_id in courses_id if course_id not in id_courses_have]
+            return abort(404, error=f'Категории с {id_missing} нет')
 
         group.name = args['name']
         group.is_active = args['is_active']
@@ -122,34 +115,33 @@ class GroupResource(Resource):
         if group not in subject.groups:
             subject.groups.append(group)
 
-        group.topics = topics
+        group.courses = courses
 
-        session.merge(subject)
+        session.merge(group)
         session.commit()
 
         return jsonify(group.to_dict(only=groups_only_admin))
 
-    def post_handler_for_teacher(self):
-        pass
-
     def delete(self, group_id):
-        check_group_by_id(group_id)
-
         session = db_session.create_session()
-        group = session.query(Group).get(group_id)
+
+        group = Group.get_entity_or_404(group_id)
+        group.is_have_permission(current_user)
+
         session.delete(group)
         session.commit()
+
         return jsonify({'success': 'success'})
 
-
-class GroupsToDict(Resource):
-    def get(self):
-        return jsonify(self.get_groups_dict())
-
-    def get_groups_dict(self):
+    def patch(self, group_id):
         session = db_session.create_session()
 
-        groups = dict()
-        for group in session.query(Group).all():
-            groups[group.id] = group.name
-        return groups
+        group = Group.get_entity_or_404(group_id)
+        group.is_have_permission(current_user)
+
+        group.generate_invite_code()
+
+        session.merge(group)
+        session.commit()
+
+        return jsonify({'group': {'invite_code': group.invite_code}})

@@ -15,6 +15,7 @@
 
 <script src="{{url_for('static', filename='vendor/codemirror/lib/codemirror.js')}}"></script>
 <script src="{{url_for('static', filename='vendor/codemirror/mode/python/python.js')}}"></script>
+<script src="{{ url_for('static', filename='js/utils/timer.js', version=STATIC_FILES_VERSION) }}"></script>
 <!--<script src="{{url_for('static', filename='vendor/codemirror/mode/clike/clike.js')}}"></script>-->
 
 <script>
@@ -23,6 +24,11 @@ const task_id = {{task.id}};
 const group_id = {{group_id}};
 const is_teacher = {{ ('true' if current_user.is_teacher else 'false')|safe}};
 const is_pupil = {{ ('true' if current_user.is_pupil else 'false')|safe}};
+
+{% set lesson_deadline = (lesson_available.deadline.timestamp() + 3600 * 6) * 1000 if lesson_available.deadline else None %}
+var deadline = {{lesson_deadline|tojson}};
+
+
 </script>
 
 <script src="{{url_for('static', filename='js/task_solution.js', version=STATIC_FILES_VERSION)}}"></script>
@@ -106,12 +112,19 @@ const is_pupil = {{ ('true' if current_user.is_pupil else 'false')|safe}};
                 {% if current_user.is_teacher %}
                 <h4 class="my-4">Отправил: {{pupil_full_name}}</h4>
                 {% endif %}
-                <p>Осталось попыток: <span id="tries-left"></span></p>
+                <div>
+                    <span>Осталось попыток: <span id="tries-left"></span></span>
+                </div>
+                {% if lesson_available.deadline %}
+                <div>
+                    <span class="text-danger">Осталось времени на решение задач: <span
+                            id="lesson_deadline"></span></span>
+                </div>
+                {% endif %}
             </div>
             <div>
                 {% if current_user.is_pupil %}
-                <button id="sendSolution" class="btn btn-primary" onclick="send_solution()">Отправить
-                </button>
+                <button id="sendSolution" class="btn btn-primary" onclick="send_solution()">Отправить</button>
                 {% else %}
                 <div>
                     <button id="acceptSolution" class="btn btn-success my-3" onclick="acceptSolution()" disabled>

@@ -39,13 +39,3 @@ class TeacherResource(Resource):
         session.delete(teacher)
         session.commit()
         return jsonify({'success': 'success'})
-
-
-class TeacherDictIdToFullName(Resource):
-    def get(self):
-        return jsonify(self.teachers_dict())
-
-    def teachers_dict(self):
-        session = db_session.create_session()
-        teachers = session.query(Teacher)
-        return {teacher.id: teacher.user.full_name for teacher in teachers}

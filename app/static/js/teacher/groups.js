@@ -1,25 +1,25 @@
-const group_api_url = '/teacher/api_group/'
+const group_api_url = '/teacher/api/group/'
 const group_data_ = 'group-data-';
 
-var groupTopicsSelect;
+var groupCoursesSelect;
 var editing_group_id = null;
 
-$('#change-topics').on('show.bs.modal', function (e) {
+$('#change-courses').on('show.bs.modal', function (e) {
     $('#group-name').text(groups[editing_group_id].name);
 
     $('#group-name-input').val(groups[editing_group_id].name);
     $('#group-status').val(groups[editing_group_id].is_active + 0);
     $('#group-subject').val(groups[editing_group_id].subject_id);
 
-    groupTopicsSelect.val(groups[editing_group_id].topics.map(function(topic){
-        return topic.id;
+    groupCoursesSelect.val(groups[editing_group_id].courses.map(function(course){
+        return course.id;
     }));
-    groupTopicsSelect.trigger('change');
+    groupCoursesSelect.trigger('change');
 })
 
-$('#change-topics').on('hide.bs.modal', function (e) {
+$('#change-courses').on('hide.bs.modal', function (e) {
   editing_group_id = null;
-  $('#change-topics').val(null).trigger('change');
+  $('#change-courses').val(null).trigger('change');
 })
 
 function editing_group_now(group_id){
@@ -27,12 +27,12 @@ function editing_group_now(group_id){
 }
 
 function success_editing_group(data, textStatus, jqXHR){
-    groups[editing_group_id].topics = data.topics;
+    groups[editing_group_id].courses = data.courses;
     groups[editing_group_id].name = data.name;
     groups[editing_group_id].is_active = data.is_active;
     groups[editing_group_id].subject_id = data.subject_id;
     $(`#${group_data_ + editing_group_id} #group-name-view`).html(data.name);
-    $('#change-topics').modal('hide');
+    $('#change-courses').modal('hide');
 }
 
 function failed_editing_group(jqXHR, textStatus, errorThrown){
@@ -43,13 +43,13 @@ function send_changed_group(){
     var name = $('#group-name-input').val();
     var is_active = $('#group-status').val();
     var subject_id = $('#group-subject').val();
-    var topics_id_list = $('#group-topics').val().map(parseInt);
+    var courses_id_list = $('#group-courses').val().map(parseInt);
 
     var data = new Object();
     data.name = name;
     data.is_active = is_active;
     data.subject_id = subject_id;
-    data.topics_id_list = topics_id_list;
+    data['courses.id'] = courses_id_list;
 
     $.ajax({
         url: group_api_url + editing_group_id,
@@ -74,8 +74,8 @@ function show_pupil(group_id){
 
 
 $(document).ready(function(){
-    groupTopicsSelect = $('#group-topics');
-    groupTopicsSelect.select2({theme: 'bootstrap4'});
+    groupCoursesSelect = $('#group-courses');
+    groupCoursesSelect.select2({theme: 'bootstrap4'});
 
     for (var group_id in groups){
         show_pupil(group_id);

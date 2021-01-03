@@ -1,4 +1,4 @@
-url_api_user = '/admin/api_user';
+url_api_user = '/admin/api/user';
 url_set_role = url_api_user + '/role';
 
 admin_role = 'Админ';

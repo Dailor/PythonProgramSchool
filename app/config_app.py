@@ -1,12 +1,14 @@
 import datetime
 
+class PaginationConfig:
+    MAX_COUNT = 10
 
 class DataBaseConfig:
-    host = "localhost"
+    host = "82.146.39.71"
     port = "5432"
-    login = 'code.cleverS_account'
+    login = 'web_school_user'
     password = 'He24X4hI6bTL'
-    db_name = "code.cleverS"
+    db_name = "web_school"
 
     conn_str = f'postgresql+psycopg2://{login}:{password}@{host}:{port}/{db_name}'
 
@@ -36,12 +38,15 @@ class StaticConfig:
 
 
 class DefaultAdminConfig:
+    ADMIN_DEFAULT_ID = 0
+    ADMIN_NAME = 'Admin'
+    ADMIN_SURNAME = 'Admin'
     ADMIN_DEFAULT_EMAIL = "admin@admin.com"  # После первого захода рекомендуется сменить
     ADMIN_DEFAULT_PASSWORD = "adminadmin"  # После первого захода рекомендуется сменить
 
 
 class CheckerConfig:
-    DOMAIN = "http://6ce23b2d2134.ngrok.io"
+    DOMAIN = "http://0153cdabfb29.ngrok.io"
 
     CHECKER_HOST = 'http://178.159.39.154'
     BATCH_SUBS_URL = CHECKER_HOST + '/submissions/batch'

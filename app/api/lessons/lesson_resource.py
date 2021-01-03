@@ -1,44 +1,37 @@
 from app.config_app import CheckerConfig
 
-from app.api.topics.topic_resource import check_topic_by_id
-from app.api.group.group_resource import check_group_by_id
-
 from ...models import db_session
 from app.models.group import Group
-from app.models.topic import Topic
-from app.models.lesson import Lesson
+from app.models.course import Course
+from app.models.lesson import Lesson, LessonAvailableToGroup
 from app.models.task import Task
 
-from .parser import parser, parser_lesson_available
+from .parser import parser, parser_lesson_available, parser_lesson_available_contest
 
 from flask import jsonify
 from flask_restful import Resource, abort
 
+from datetime import datetime
 
-def check_lesson_by_id(lesson_id):
-    session = db_session.create_session()
-    lesson = session.query(Lesson).get(lesson_id)
 
-    if lesson is None:
-        abort(404, error=f'Урок с {lesson_id} не найден')
+def lesson_serializer(lesson):
+    return lesson.to_dict(only=('id', 'name'))
 
 
 class LessonsListResource(Resource):
-    def get(self, topic_id):
-        check_topic_by_id(topic_id)
+    def get(self, course_id):
+        Course.get_entity_or_404(course_id)
 
         session = db_session.create_session()
-        lessons = session.query(Lesson).filter(Lesson.topic_id == topic_id)
+        lessons = session.query(Lesson).filter(Lesson.course_id == course_id)
 
-        return jsonify({'lessons': [lesson.to_dict() for lesson in lessons]})
+        return jsonify({'lessons': [lesson_serializer(lesson) for lesson in lessons]})
 
-    def put(self, topic_id):
-        check_topic_by_id(topic_id)
-
+    def put(self, course_id):
         args = parser.parse_args()
         session = db_session.create_session()
 
-        topic = session.query(Topic).get(topic_id)
+        course = Course.get_entity_or_404(course_id)
 
         lesson = Lesson()
         lesson.name = args['name']
@@ -71,9 +64,9 @@ class LessonsListResource(Resource):
 
             lesson.tasks.append(task)
 
-        topic.lessons.append(lesson)
+        course.lessons.append(lesson)
 
-        session.merge(topic)
+        session.merge(course)
         session.commit()
 
         return jsonify({'success': 'success'})
@@ -81,24 +74,20 @@ class LessonsListResource(Resource):
 
 class LessonResource(Resource):
     def get(self, lesson_id):
-        check_lesson_by_id(lesson_id)
+        lesson = Lesson.get_entity_or_404(lesson_id)
 
-        session = db_session.create_session()
+        return jsonify(lesson_serializer(lesson))
 
-        lesson = session.query(Lesson).get(lesson_id)
-
-        return jsonify(lesson.to_dict())
-
-    def post(self, topic_id, lesson_id):
-        check_topic_by_id(topic_id)
-        check_lesson_by_id(lesson_id)
+    def post(self, course_id, lesson_id):
+        Course.get_entity_or_404(course_id)
+        lesson = Lesson.get_entity_or_404(lesson_id)
 
         args = parser.parse_args()
         session = db_session.create_session()
 
-        lesson = session.query(Lesson).get(lesson_id)
-        [session.delete(task) for task in lesson.tasks]
-        lesson.tasks = []
+        lesson.tasks.clear()
+        # for task in lesson.tasks:
+        #     session.delete(task)
 
         lesson.name = args['name']
         lesson.html = args['html_page']
@@ -137,12 +126,11 @@ class LessonResource(Resource):
 
         return jsonify({'success': 'success'})
 
-    def delete(self, topic_id, lesson_id):
-        check_topic_by_id(topic_id)
-        check_lesson_by_id(lesson_id)
+    def delete(self, course_id, lesson_id):
+        Course.get_entity_or_404(course_id)
+        lesson = Lesson.get_entity_or_404(lesson_id)
 
         session = db_session.create_session()
-        lesson = session.query(Lesson).get(lesson_id)
 
         session.delete(lesson)
         session.commit()
@@ -157,23 +145,20 @@ class LessonAvailableListResource(Resource):
         group_id = args['group_id']
         lesson_id = args['lesson_id']
 
-        check_group_by_id(group_id)
-        check_lesson_by_id(lesson_id)
-
         session = db_session.create_session()
 
-        lesson = session.query(Lesson).get(lesson_id)
-        group = session.query(Group).get(group_id)
+        lesson = Lesson.get_entity_or_404(group_id)
+        group = Group.get_entity_or_404(group_id)
 
-        if not (lesson.topic in group.topics):
-            abort(403, error=f'Урок с {lesson_id} ID не находится в категориях данной группы')
+        if not (lesson.course in group.courses):
+            return abort(403, error=f'Урок с {lesson_id} ID не находится в категориях данной группы')
 
         if lesson in group.lessons:
-            abort(403, error=f'Этот урок уже доступен этой группе')
+            return abort(403, error=f'Этот урок уже доступен этой группе')
 
         group.lessons.append(lesson)
-        session.merge(group)
 
+        session.merge(group)
         session.commit()
 
         return jsonify({'success': 'success'})
@@ -184,13 +169,10 @@ class LessonAvailableListResource(Resource):
         group_id = args['group_id']
         lesson_id = args['lesson_id']
 
-        check_group_by_id(group_id)
-        check_lesson_by_id(lesson_id)
-
         session = db_session.create_session()
 
-        lesson = session.query(Lesson).get(lesson_id)
-        group = session.query(Group).get(group_id)
+        lesson = Lesson.get_entity_or_404(lesson_id)
+        group = Group.get_entity_or_404(group_id)
 
         if not lesson in group.lessons:
             abort(404, error='Урок не был отрыт для этой группы')
@@ -198,6 +180,35 @@ class LessonAvailableListResource(Resource):
         group.lessons.remove(lesson)
         session.merge(group)
 
+        session.commit()
+
+        return jsonify({'success': 'success'})
+
+    def patch(self):
+        args = parser_lesson_available_contest.parse_args()
+
+        group_id = args['group_id']
+        lesson_id = args['lesson_id']
+        deadline = args['deadline']
+
+        deadline_datetime = datetime.fromtimestamp(deadline)
+        if deadline_datetime < datetime.utcnow():
+            return abort(400, error='Дата должна быть позже чем сейчас')
+
+        session = db_session.create_session()
+
+        lesson = Lesson.get_entity_or_404(lesson_id)
+        group = Group.get_entity_or_404(group_id)
+
+        if lesson in group.lessons:
+            return abort(403, error=f'Этот урок уже доступен этой группе')
+
+        lesson_available_contest = LessonAvailableToGroup()
+        lesson_available_contest.group_id = group_id
+        lesson_available_contest.lesson_id = lesson_id
+        lesson_available_contest.deadline = deadline_datetime
+
+        session.add(lesson_available_contest)
         session.commit()
 
         return jsonify({'success': 'success'})

@@ -24,11 +24,14 @@
             <!-- Dropdown - User Information -->
             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
                 {% if current_user.is_pupil %}
-                    <a class="dropdown-item" href="/pupils/{{current_user.pupil.id}}">
-                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                        Профиль
-                    </a>
-                    <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="/pupils/{{current_user.pupil.id}}">
+                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
+                    Профиль
+                </a>
+                <button class="btn dropdown-item" data-toggle="modal" data-target="#change-profile"><i
+                        class="fas fa-user-cog fa-sm fa-fw mr-2 text-gray-400"></i>Изменить
+                </button>
+                <div class="dropdown-divider"></div>
                 {% endif %}
                 <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
                     <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>

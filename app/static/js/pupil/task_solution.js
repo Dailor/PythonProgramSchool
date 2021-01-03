@@ -1,4 +1,4 @@
-url = '/pupil/api_solution'
+url = '/pupil/api/solution'
 
 
 
@@ -26,7 +26,7 @@ function send_solution(){
         data: data,
         success: success_ajax_send_solution,
         error: function(jqXHR, textStatus, errorThrown){
-           alert(textStatus);
+           alert(jqXHR.responseJSON.error);
         }
     });
 

@@ -1,4 +1,4 @@
 from flask_restful import reqparse
 
 parser = reqparse.RequestParser()
-parser.add_argument('name', required=True, type=str.strip)
+parser.add_argument('name', required=True)

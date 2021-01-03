@@ -3,11 +3,11 @@ var id_taskSolution = 'taskSolution';
 var id_card = 'card';
 var id_now = 0;
 
-var api_url = document.location.origin + '/teacher/api_lesson/' + topic_id;
-var url_success_ajax = document.location.origin + '/teacher/' + 'topics/' + topic_id;
+var api_url = document.location.origin + '/teacher/api/course/' + course_id + '/lesson';
+var url_success_ajax = document.location.origin + '/teacher/' + 'course/' + course_id;
 
 if (http_request_type == 'POST'){
-    api_url += '/lesson/' + lesson.id;
+    api_url += '/' + lesson.id;
 }
 
 function addTaskExample(task_id){
@@ -208,16 +208,17 @@ function send_data(){
 }
 
 
-$(document).ready(function(){
+$().ready(function(){
+    CKEDITOR.replace('lessonMaterial');
+
     if(!lesson){
         return;
     }
 
-    CKEDITOR.replace('lessonMaterial');
     CKEDITOR.instances['lessonMaterial'].setData(lesson.html, {callback: function() {
-                                                                                                this.checkDirty(); // true
-                                                                                            }
-                                                                                    });
+                                                                                        this.checkDirty(); // true
+                                                                                    }}
+                                                );
 
     $('#lessonName').val(lesson.name);
 
@@ -245,6 +246,7 @@ $(document).ready(function(){
         task_card.find('#taskTimeLimit').val(task.time_sec);
         task_card.find('#taskMemoryLimit').val(task.memory_mb);
         task_card.find('#maxCountTries').val(task.tries_count);
+        task_card.find('#autotest-example').prop('checked', task.api_check);
 
         for(var j = 0; j < task.examples.length; j++){
             var example_block = addTaskExample(`task${task_id}`);

@@ -18,21 +18,39 @@
 {% block content_class%}ml-1{% endblock %}
 
 {% block content %}
-<h1>Профиль</h1>
+<p>
+    <h2>{{pupil.user.full_name}}</h2>
+</p>
+
+<div class="row urls-to-contest-systems">
+    <h4 class="col-sm-6">Ссылки на контест системы</h4>
+    <div class="col-sm-3">
+        {% for contest_system_to_pupil in pupil.available_contest_systems() %}
+            <h5>{{ contest_system_to_pupil.contest_system.name }}:
+                {% if contest_system_to_pupil.id_on_contest_system %}
+                    <a href="{{contest_system_to_pupil.url_to_submissions_history_url}}">ссылка</a>
+                {% else %}
+                    <span class="text-danger">Ссылка не указана</span>
+                {% endif %}
+            </h5>
+        {% endfor %}
+    </div>
+
+</div>
 <div class="statistic mt-4">
     {% for group_id in statistic_for_group %}
         <h3>{{ statistic_for_group[group_id]['group_name'] }}</h3>
-        {% set statistic_for_topics  = statistic_for_group[group_id]['topics'] %}
+        {% set statistic_for_courses  = statistic_for_group[group_id]['courses'] %}
         <div class="row mt-3">
-        {% for topic_id in statistic_for_topics %}
+        {% for course_id in statistic_for_courses %}
             <div class="col-xl-3 col-lg-5">
                 <div class="card shadow mb-4">
                     <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">{{ statistic_for_topics[topic_id]['topic_name'] }}</h6>
+                        <h6 class="m-0 font-weight-bold text-primary">{{ statistic_for_courses[course_id]['course_name'] }}</h6>
                     </div>
                     <div class="card-body">
                         <div class="chart-pie pt-4">
-                            <canvas id="statistic-{{ group_id }}-{{ topic_id }}"></canvas>
+                            <canvas id="statistic-{{ group_id }}-{{ course_id }}"></canvas>
                         </div>
                     </div>
                 </div>

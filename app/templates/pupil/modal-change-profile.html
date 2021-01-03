@@ -1,0 +1,31 @@
+<div class="modal" tabindex="-1" role="dialog" id="change-profile">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Изменить</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                {% for contest_system in current_user.pupil.available_contest_systems() %}
+                <form id="contest-system" onsubmit="return change_id_in_contest_system_form_submit()" contest-system-id="{{contest_system.contest_system.id}}">
+                        <div class="form-group" id="contest-system-to-pupil">
+                            <label for="id">{{contest_system.contest_system.name}}</label>
+                            <input type="text" class="form-control" id="id"
+                                   placeholder="ID на сайте" required>
+
+                            <span id="success" class="text-success"></span>
+                            <span id="error" class="text-danger"></span>
+
+                            <div class="d-flex justify-content-end mt-2">
+                                <input type="submit" class="btn btn-primary" value="Сохранить">
+                            </div>
+                        </div>
+                </form>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/pupil/modal-contest-system.js', version=STATIC_FILES_VERSION) }}"></script>

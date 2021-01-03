@@ -1,4 +1,4 @@
-var url_api_pupils = '/admin/api_pupil';
+var url_api_pupils = '/admin/api/pupil';
 
 var dataTable_users;
 var dataSrc = 'pupils';
@@ -24,7 +24,7 @@ function error_ajax_crud(func_default, jqXHR, textStatus, errorThrown){
 columns = [{id: 'id',
             data: 'id',
             title: 'ID',
-            type: 'readonly',
+            type: 'hidden',
             },
 
            {id: 'name',
@@ -35,7 +35,6 @@ columns = [{id: 'id',
             },
 
            {id: 'groups',
-            required: true,
             data: 'groups_id',
             title: 'Группы',
             type: 'select',
@@ -53,7 +52,7 @@ columns = [{id: 'id',
             required: true,
             data: 'user.confident_info',
             title: 'Личная информация',
-            type: 'readonly',
+            type: 'hidden',
             }
           ];
 

@@ -1,9 +1,7 @@
 from .parser import parser
 
-from app.models.__all_models import Task, Solutions, TaskCheckStatus
+from app.models.__all_models import Task, Solution, TaskCheckStatus, Group
 from app.models import db_session
-
-from app.api.task.task_resource import check_task_by_id, check_group_by_id
 
 from flask import jsonify
 from flask_restful import Resource, abort
@@ -18,15 +16,14 @@ class SolutionOnTask(Resource):
 
         session = db_session.create_session()
 
-        check_group_by_id(group_id)
-        check_task_by_id(task_id)
+        Group.get_entity_or_404(group_id)
 
         pupil = current_user.pupil
-        task = session.query(Task).get(task_id)
+        task = Task.get_entity_or_404(task_id)
 
-        pupil_solutions_on_task = session.query(Solutions).filter(Solutions.task_id == task.id,
-                                                                  Solutions.group_id == group_id,
-                                                                  Solutions.pupil_id == pupil.id).all()
+        pupil_solutions_on_task = session.query(Solution).filter(Solution.task_id == task.id,
+                                                                 Solution.group_id == group_id,
+                                                                 Solution.pupil_id == pupil.id).all()
 
         can_see_solution = False
 

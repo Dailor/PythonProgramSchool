@@ -1,4 +1,4 @@
-url_api_subject = '/admin/api_subject';
+url_api_subject = '/admin/api/subject';
 
 
 dataSrc = 'subjects';
@@ -28,7 +28,7 @@ function error_ajax_crud(func_default, jqXHR, textStatus, errorThrown){
 columns = [{id: 'id',
             data: 'id',
             title: 'ID',
-            type: 'readonly',
+            type: 'hidden',
             },
 
            {id: 'name',
@@ -38,23 +38,23 @@ columns = [{id: 'id',
             type: 'text'},
 
            {id: 'teachers',
-            data: 'teachers_names',
+            data: 'teachers',
             title: 'Учителя',
-            type: 'readonly',
+            type: 'hidden',
             render: function(data, type, row, meta){
                 var result = ''
-                for (index in data)
-                    result += wrap_in_tag('div', data[index]);
+                for (var i=0; i < data.length; i++)
+                    result += wrap_in_tag('div', data[i].name);
                 return result;}},
 
            {id: 'groups',
-            data: 'groups_names',
+            data: 'groups',
             title: 'Группы',
-            type: 'readonly',
+            type: 'hidden',
             render: function(data, type, row, meta){
                 var result = ''
-                for (index in data)
-                    result += wrap_in_tag('div', data[index]);
+                for (var i=0; i < data.length; i++)
+                    result += wrap_in_tag('div', data[i].name);
                 return result;
             }
             }

@@ -1,10 +1,8 @@
 from app import app, recaptcha
 from app.models import db_session
-from app.models.group import Group
-from app.models.pupil import Pupil
-from app.models.task import TaskCheckStatus
-from app.models.user import User
-from app.models.queries import tasks_count_of_pupil_for_topic, groups_by_subject
+
+from app.models.__all_models import Pupil, TaskCheckStatus, User, Group
+from app.models.queries import tasks_count_of_pupil_for_course
 
 from app.forms.login import LoginForm, LoginAnswers
 from app.forms.registration import RegistrationForm
@@ -12,7 +10,7 @@ from app.forms.password_reset import ResetPasswordRequestForm, ResetPasswordForm
 
 from app.utils import send_password_reset_email
 
-from flask import render_template, redirect, abort, flash, url_for, request
+from flask import render_template, redirect, abort, flash, url_for
 from flask_login import login_user, logout_user, current_user, login_required
 
 from functools import wraps
@@ -107,42 +105,22 @@ def registration():
     form = RegistrationForm()
     captcha_error = False
 
-    groups_by_subject_data = groups_by_subject()
-
-    groups_by_subject_dict = dict()
-    for group_id, group_name, subject_id, subject_name in groups_by_subject_data:
-        group_info = {"id": group_id,
-                      "name": group_name}
-
-        if subject_id not in groups_by_subject_dict:
-            groups_by_subject_dict[subject_id] = {"name": subject_name,
-                                                  "groups": [group_info]}
-        else:
-            groups_by_subject_dict[subject_id]["groups"].append(group_info)
-
     if form.is_submitted():
         if recaptcha.verify():
             user = form.check_form()
             if user:
                 session = db_session.create_session()
-                group_ids = [int(x) for x in form.groups.data]
-                groups = session.query(Group).filter(Group.id.in_(group_ids))
-                pupil = Pupil()
-                pupil.groups.extend(groups)
-
-                user.pupil = pupil
 
                 session.add(user)
                 session.commit()
+
                 flash("Аккаунт создан!")
+
                 return redirect('/login')
         else:
             captcha_error = True
 
-    form.subjects.choices = [
-        (subject_id, groups_by_subject_dict[subject_id]['name']) for subject_id in groups_by_subject_dict]
-
-    return render_template('registration.html', groups_by_subject_dict=groups_by_subject_dict, form=form,
+    return render_template('registration.html', form=form,
                            captcha_error=captcha_error)
 
 
@@ -171,10 +149,10 @@ def pupil_profile(pupil_id):
     pupil = session.query(Pupil).get(pupil_id)
 
     # Group.id, Topic.id, Group.name, Topic.name, func.count(distinct(Task.id)), solution_status
-    tasks_success_count_of_pupil_for_topics = tasks_count_of_pupil_for_topic(pupil_id=pupil_id,
-                                                                             solution_status=TaskCheckStatus.ACCESS)
+    tasks_success_count_of_pupil_for_topics = tasks_count_of_pupil_for_course(pupil_id=pupil_id,
+                                                                              solution_status=TaskCheckStatus.ACCESS)
 
-    tasks_unsolved_count_of_pupil_for_topics = tasks_count_of_pupil_for_topic(pupil_id=pupil_id, solution_status=None)
+    tasks_unsolved_count_of_pupil_for_topics = tasks_count_of_pupil_for_course(pupil_id=pupil_id, solution_status=None)
 
     statistic_solved_and_unsolved_task_for_group_of_pupil = dict()
 
@@ -203,10 +181,34 @@ def pupil_profile(pupil_id):
 
         if group_id not in statistic_solved_and_unsolved_task_for_group_of_pupil:
             statistic_solved_and_unsolved_task_for_group_of_pupil[group_id] = {'group_name': group_name,
-                                                                               'topics': {
+                                                                               'course': {
                                                                                    topic_id: topic_statistic_dict}}
         else:
-            statistic_solved_and_unsolved_task_for_group_of_pupil[group_id]['topics'][topic_id] = topic_statistic_dict
+            statistic_solved_and_unsolved_task_for_group_of_pupil[group_id]['course'][topic_id] = topic_statistic_dict
 
     return render_template('pupil_profile.html', pupil=pupil,
                            statistic_for_group=statistic_solved_and_unsolved_task_for_group_of_pupil)
+
+
+@app.route('/invite_to_group/<invite_code>')
+@login_required
+def invite_to_group(invite_code):
+    session = db_session.create_session()
+
+    group = Group.get_by_invite_code(invite_code)
+
+    if current_user.is_teacher or current_user.is_admin:
+        return redirect('/')
+
+    if not current_user.is_pupil:
+        pupil = Pupil()
+    else:
+        pupil = current_user.pupil
+
+    pupil.groups.append(group)
+
+    current_user.pupil = pupil
+    session.merge(pupil)
+    session.commit()
+
+    return redirect('/')

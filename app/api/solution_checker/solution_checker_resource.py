@@ -1,5 +1,5 @@
 from app.models import db_session
-from app.models.__all_models import Submission, Solutions, ApiCheckAnswers, TaskInfoFields, SubmissionsBatch
+from app.models.__all_models import Submission, Solution, ApiCheckAnswers, TaskInfoFields, SubmissionsBatch
 from flask_restful import Resource
 from flask import request
 

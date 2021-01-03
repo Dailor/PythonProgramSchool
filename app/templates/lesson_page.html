@@ -3,6 +3,7 @@
 
 {% block style %}
 <link href="{{url_for('static', filename='css/lesson_page.css', version=STATIC_FILES_VERSION)}}" rel="stylesheet">
+
 {% endblock %}
 
 {% block javascript %}
@@ -10,21 +11,28 @@
 <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 <script type="text/javascript" async
         src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML"></script>
-
+<script src="{{ url_for('static', filename='js/utils/timer.js', version=STATIC_FILES_VERSION) }}"></script>
 <script>
-lesson = {{lesson|tojson}};
-group_id = {{group_id|safe}};
 
 
+var lesson = {{lesson|tojson}};
+const group_id = {{group_id|tojson}};
+
+{% if lesson_available %}
+    {% set lesson_deadline = (lesson_available.deadline.timestamp() + 3600 * 6) * 1000 if lesson_available.deadline else None %}
+    var deadline = {{lesson_deadline|tojson}};
+{% else %}
+    var deadline = null;
+{% endif %}
 
 </script>
 <script src="{{ url_for('static', filename='js/lesson_page.js', version=STATIC_FILES_VERSION) }}"></script>
 {% if not lesson_test_view %}
-    {% if current_user.is_teacher %}
-    <script src="{{ url_for('static', filename='js/teacher/lesson_page.js', version=STATIC_FILES_VERSION) }}"></script>
-    {% else %}
-    <script src="{{ url_for('static', filename='js/pupil/lesson_page.js',version=STATIC_FILES_VERSION) }}"></script>
-    {% endif %}
+{% if current_user.is_teacher %}
+<script src="{{ url_for('static', filename='js/teacher/lesson_page.js', version=STATIC_FILES_VERSION) }}"></script>
+{% else %}
+<script src="{{ url_for('static', filename='js/pupil/lesson_page.js',version=STATIC_FILES_VERSION) }}"></script>
+{% endif %}
 {% endif %}
 {% endblock %}
 
@@ -32,14 +40,25 @@ group_id = {{group_id|safe}};
 <div class="px-5">
     <h2 class="font-weight-bold mb-3">{{lesson.name}}</h2>
     {% if current_user.is_teacher and not lesson_test_view%}
-    <div class="lesson_available_switcher" id="lesson_available_switcher"
-         onclick="set_lesson_available({{lesson.id}}, {{(not is_lesson_available)|lower}})">
-        {% if not is_lesson_available %}
-        <h5 class="my-3"><span class="fas fa-eye"></span> Показать урок</h5>
-        {% else %}
-        <h5 class="my-3"><span class="fas fa-eye-slash"></span> Скрыть урок</h5>
+    <div class="row">
+        <div class="lesson_available_switcher col-sm-2" id="lesson_available_switcher"
+             onclick="set_lesson_available({{lesson.id}}, {{(not lesson_available)|lower}})">
+            {% if not lesson_available %}
+            <h5 class="my-3"><span class="fas fa-eye"></span> Показать урок</h5>
+            {% else %}
+            <h5 class="my-3"><span class="fas fa-eye-slash"></span> Скрыть урок</h5>
+            {% endif %}
+        </div>
+        {% if not lesson_available %}
+        <div class="col-2" id="modal-contest">
+            <button class="btn btn-primary" data-toggle="modal" data-target="#contestModal">Начать контест</button>
+        </div>
         {% endif %}
     </div>
+    {% endif %}
+
+    {% if lesson_available and lesson_available.deadline %}
+        <span class="text-danger">Осталось времени на решение задач: <span id="lesson_deadline"></span></span>
     {% endif %}
 
     <div class="lesson-material row my-3">
@@ -79,7 +98,8 @@ group_id = {{group_id|safe}};
                             <span id="arrow"
                                   class="fa fa-angle-{{'down' if current_user.is_teacher else 'left'}} fa-lg"></span>
                         </div>
-                        <div class="card-body" hidden {{'selected' if current_user.is_pupil else ''}}>
+                        <div class="card-body" hidden {{
+                        'selected' if current_user.is_pupil else ''}}>
                         {% if not current_user.is_pupil %}
                         <div class="waiting-check-pupils task-results">
                             <h4 class="text-warning">Ждут проверки</h4>
@@ -142,6 +162,34 @@ group_id = {{group_id|safe}};
         </div>
     </div>
 </div>
-
+{% if current_user.is_teacher and not lesson_test_view %}
+<div class="modal fade" id="contestModal" tabindex="-1" role="dialog" aria-labelledby="contestModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contestModalLabel">Контест</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group row">
+                    <label for="datetime-input" class="col-2 col-form-label">Дата и время</label>
+                    <div class="col-10">
+                        <input class="form-control" type="datetime-local"
+                               id="datetime-input">
+                        <span class="text-danger" id="datetime-error"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="start_contest()">Старт</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 </div>
 {% endblock %}

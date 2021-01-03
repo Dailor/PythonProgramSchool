@@ -1,12 +1,12 @@
 from app.models import db_session
-from app.models.__all_models import Topic
+from app.models.__all_models import UserRoles, Course, Teacher, Group, Subject
 
-from app.api.user.user_resource import UserListResource, UserResource, RoleSetterResource
-from app.api.group.group_resource import GroupListResource, GroupResource, GroupsToDict
-from app.api.teacher.teacher_resource import TeacherListResource, TeacherDictIdToFullName, TeacherResource
+from app.api.user.user_resource import UserListResource, UserResource
+from app.api.group.group_resource import GroupListResource, GroupResource
+from app.api.teacher.teacher_resource import TeacherListResource, TeacherResource
 from app.api.pupils.pupil_resource import PupilListResource, PupilResource
-from app.api.subject.subject_resource import SubjectListResource, SubjectDictIdToName, SubjectResource
-from app.api.topics.topic_resource import TopicListResource, TopicResource
+from app.api.subject.subject_resource import SubjectListResource, SubjectResource
+from app.api.course.course_resource import CourseListResource, CourseResource
 
 from flask import blueprints as bl_module
 from flask import render_template, redirect, abort
@@ -15,26 +15,29 @@ from flask_restful import Api
 from werkzeug.exceptions import Forbidden
 
 blueprint = bl_module.Blueprint("admin", __name__, template_folder="templates", static_folder="static")
-api = Api(blueprint)
+api = Api(blueprint, prefix='/api')
 
-api.add_resource(UserListResource, '/api_user')
-api.add_resource(UserResource, '/api_user/<int:user_id>')
-api.add_resource(RoleSetterResource, '/api_user/role')
 
-api.add_resource(GroupResource, '/api_group/<int:group_id>')
-api.add_resource(GroupListResource, '/api_group')
+def register_resources():
+    api.add_resource(UserListResource, '/user')
+    api.add_resource(UserResource, '/user/<int:user_id>')
 
-api.add_resource(TeacherResource, '/api_teacher/<int:teacher_id>')
-api.add_resource(TeacherListResource, '/api_teacher')
+    api.add_resource(TeacherResource, '/teacher/<int:teacher_id>')
+    api.add_resource(TeacherListResource, '/teacher')
 
-api.add_resource(PupilResource, '/api_pupil/<int:pupil_id>')
-api.add_resource(PupilListResource, '/api_pupil')
+    api.add_resource(PupilResource, '/pupil/<int:pupil_id>')
+    api.add_resource(PupilListResource, '/pupil')
 
-api.add_resource(SubjectResource, '/api_subject/<int:subject_id>')
-api.add_resource(SubjectListResource, '/api_subject')
+    api.add_resource(GroupResource, '/group/<int:group_id>')
+    api.add_resource(GroupListResource, '/group')
 
-api.add_resource(TopicListResource, '/api_topic')
-api.add_resource(TopicResource, '/api_topic/<int:topic_id>')
+    api.add_resource(CourseListResource, '/course')
+    api.add_resource(CourseResource, '/course/<int:course_id>')
+
+    api.add_resource(SubjectResource, '/subject/<int:subject_id>')
+    api.add_resource(SubjectListResource, '/subject')
+
+
 
 
 @blueprint.before_request
@@ -47,7 +50,7 @@ def before_request_func():
 
 @blueprint.route("/users")
 def users_table():
-    return render_template("admin/users.html")
+    return render_template("admin/users.html", all_roles=UserRoles.all_roles())
 
 
 @blueprint.route("/admins")
@@ -62,7 +65,8 @@ def teachers_table():
 
 @blueprint.route('/pupils')
 def pupils_table():
-    groups_dict = GroupsToDict().get_groups_dict()
+    session = db_session.create_session()
+    groups_dict = {group.id: group.name for group in session.query(Group).all()}
     return render_template("admin/pupils.html", groups_dict=groups_dict)
 
 
@@ -75,16 +79,22 @@ def subjects_table():
 def groups_table():
     session = db_session.create_session()
 
-    teachers_dict = TeacherDictIdToFullName().teachers_dict()
-    subjects_dict = SubjectDictIdToName().subjects_dict()
-    topics_dict = {topic.id: topic.name for topic in session.query(Topic).all()}
+    teachers_dict = {teacher.id: teacher.user.full_name for teacher in session.query(Teacher).all()}
+    subjects_dict = {subject.id: subject.name for subject in session.query(Subject).all()}
+    courses_dict = {course.id: course.name for course in session.query(Course).all()}
 
     return render_template("admin/groups.html", teachers_dict=teachers_dict, subjects_dict=subjects_dict,
-                           topics_dict=topics_dict)
+                           courses_dict=courses_dict)
 
 
-@blueprint.route('/topics')
-def topics_table():
-    teachers_dict = TeacherDictIdToFullName().teachers_dict()
-    groups_dict = GroupsToDict().get_groups_dict()
-    return render_template("admin/topics.html", teachers_dict=teachers_dict, groups_dict=groups_dict)
+@blueprint.route('/courses')
+def courses_table():
+    session = db_session.create_session()
+
+    teachers_dict = {teacher.id: teacher.user.full_name for teacher in session.query(Teacher).all()}
+    groups_dict = {group.id: group.name for group in session.query(Group).all()}
+
+    return render_template("admin/courses.html", teachers_dict=teachers_dict, groups_dict=groups_dict)
+
+
+register_resources()

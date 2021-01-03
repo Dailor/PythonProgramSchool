@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{topic_name}}{% endblock %}
+{% block title %}{{course.name}}{% endblock %}
 
 {% block style %}
 {% endblock %}
@@ -9,19 +9,17 @@
 
 <!--JS код для этой страницы-->
 <script>
-    var topic_id = {{topic_id}};
+    var course_id = {{course.id}};
     var http_request_type = '{{http_request_type}}';
 
     const time_limit_max = {{time_limit_max}};
     const memory_limit_max = {{memory_limit_max}};
 
     {% if lesson %}
-        lesson = {{lesson|tojson}};
+        const lesson = {{lesson|tojson}};
     {% else %}
-        lesson = undefined;
+        const lesson = null;
     {% endif %}
-
-
 
 </script>
 

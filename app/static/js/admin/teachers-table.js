@@ -1,13 +1,7 @@
-url_api_teacher = '/admin/api_teacher';
-site_url = document.location.origin
-url_edit_teacher = site_url + '/admin/teachers/edit/'
-
-admin_role = 'Админ';
-teacher_role = 'Учитель';
-pupil_role = 'Ученик';
+const url_api_teacher = '/admin/api/teacher';
+const site_url = document.location.origin
 
 dataSrc = 'teachers';
-
 
 var dataTable_teacher;
 
@@ -20,6 +14,7 @@ function string_in_quotes(str){
 columns = [{id: 'id',
             data: 'id',
             title: 'ID',
+            type: 'hidden'
             },
 
            {id: 'name',

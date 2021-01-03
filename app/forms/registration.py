@@ -1,5 +1,5 @@
 from app import app
-from app.api.parsers_data_checker.checkers import CheckPassword
+from app.api.utils.parser.checkers import CheckPassword
 
 from app.models import db_session
 from app.models.__all_models import User
@@ -31,7 +31,7 @@ class RegistrationForm(FlaskForm):
 
     def check_password(self):
         try:
-            CheckPassword().check_string(self.password.data)
+            CheckPassword.check_string(self.password.data)
         except Exception as e:
             self.password.errors = [e]
             return False

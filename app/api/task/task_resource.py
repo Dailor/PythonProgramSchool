@@ -1,41 +1,22 @@
 from app.config_app import CheckerConfig
 
-from app.models.__all_models import Task, Solutions, TaskCheckStatusString, TaskCheckStatus, TaskInfoFields, Group, \
-    SubmissionsBatch
+from app.models.__all_models import Task, Solution, TaskCheckStatusString, TaskCheckStatus, TaskInfoFields, Group, \
+    SubmissionsBatch, Pupil
 from ...models import db_session
 
-from app.api.group.group_resource import check_group_by_id
-from app.api.pupils.pupil_resource import check_pupil_by_id
-
-from .parser import parser, parser_solution_for_task, parser_solutions_list_for_task, parser_solution_status_change
+from .parser import parser,  parser_solutions_list_for_task, parser_solution_status_change
 
 import requests
-import json
+from datetime import datetime
 
-from flask import jsonify
+from flask import jsonify, request as rq
 from flask_restful import Resource, abort
 from flask_login import current_user
 
 
-def check_task_by_id(task_id):
-    session = db_session.create_session()
-    task = session.query(Task).get(task_id)
-
-    if task is None:
-        abort(404, error=f'Задача с {task_id} ID не найдена')
-
-
-def check_solution_by_id(solution_id):
-    session = db_session.create_session()
-
-    solution = session.query(Solutions).get(solution_id)
-    if solution is None:
-        abort(404, error=f'Решение с {solution_id} ID не найдено')
-
-
 def check_permission(user, group_id):
     if user.is_teacher is False:
-        abort(403, 'Нужно хотя бы являтся учителем')
+        return abort(403, 'Нет доступа')
 
     session = db_session.create_session()
 
@@ -44,27 +25,25 @@ def check_permission(user, group_id):
     group = session.query(Group).get(group_id)
 
     if teacher.id != group.teacher_id:
-        abort(403, f'Вы не ведет у группы с {group_id} ID')
+        return abort(403, f'Вы не ведет у группы с {group_id} ID')
 
 
 class SolutionsListResource(Resource):
     def get(self, group_id, task_id):
-        pupil_to_dict_rules = ('-groups',)
-
-        check_task_by_id(task_id)
-        check_group_by_id(group_id)
+        pupil_to_dict_only = ('id', 'user.full_name')
+        Task.get_entity_or_404(task_id)
 
         session = db_session.create_session()
-        group = session.query(Group).get(group_id)
+        group = Group.get_entity_or_404(group_id)
 
         pupils_solutions_info = dict()
         pupils_tried_to_solve = dict()
         pupil_solved = dict()
 
         for status, string_status in zip(TaskCheckStatus.ALL_STATUS, TaskCheckStatusString.ALL_STATUS):
-            solutions = session.query(Solutions).filter(Solutions.task_id == task_id,
-                                                        Solutions.group_id == group_id,
-                                                        Solutions.review_status == status).order_by(Solutions.id.desc())
+            solutions = session.query(Solution).filter(Solution.task_id == task_id,
+                                                       Solution.group_id == group_id,
+                                                       Solution.review_status == status).order_by(Solution.id.desc())
 
             solutions_for_string_status = pupils_solutions_info[string_status] = list()
             double_check = dict()
@@ -74,7 +53,7 @@ class SolutionsListResource(Resource):
                     if status == TaskCheckStatus.FAILED and pupil_solved.get(solution.pupil_id, False):
                         continue
 
-                    pupil_dict = solution.pupil.to_dict(rules=pupil_to_dict_rules)
+                    pupil_dict = solution.pupil.to_dict(only=pupil_to_dict_only)
                     pupil_dict['solution_id'] = solution.id
 
                     solutions_for_string_status.append(pupil_dict)
@@ -84,7 +63,7 @@ class SolutionsListResource(Resource):
                     if status == TaskCheckStatus.ACCESS:
                         pupil_solved[solution.pupil_id] = True
 
-        pupils_solutions_info[TaskCheckStatusString.NOT_PASS] = [pupil.to_dict(rules=pupil_to_dict_rules) for pupil in
+        pupils_solutions_info[TaskCheckStatusString.NOT_PASS] = [pupil.to_dict(only=pupil_to_dict_only) for pupil in
                                                                  group.pupils if
                                                                  not pupils_tried_to_solve.get(pupil.id, False)]
 
@@ -96,28 +75,31 @@ class SolutionsListResource(Resource):
         group_id = args['group_id']
         task_id = args['task_id']
 
-        check_group_by_id(group_id)
-        check_task_by_id(task_id)
-
         session = db_session.create_session()
 
-        group = session.query(Group).get(group_id)
+        group = Group.get_entity_or_404(group_id)
+        task = Task.get_entity_or_404(task_id)
         pupil = current_user.pupil
 
+        lesson_available = group.get_lesson_available_by_lesson(task.lesson)
+
+        if lesson_available.deadline and lesson_available.deadline < datetime.utcnow():
+            return abort(400, error='Сдача после дедлайна')
+
         if pupil is None or pupil not in group.pupils:
-            abort(403)
+            return abort(403)
 
         task = session.query(Task).get(task_id)
 
-        solutions_passed = session.query(Solutions).filter(Solutions.pupil_id == pupil.id,
-                                                           Solutions.group_id == group_id,
-                                                           Solutions.task_id == task_id).order_by(Solutions.id).all()
+        solutions_passed = session.query(Solution).filter(Solution.pupil_id == pupil.id,
+                                                          Solution.group_id == group_id,
+                                                          Solution.task_id == task_id).order_by(Solution.id).all()
         tries_left = task.tries_count - len(solutions_passed)
 
         if tries_left <= 0:
             abort(403, error='У вас закончились попытки')
 
-        solution = Solutions()
+        solution = Solution()
         solution.task_id = task_id
         solution.group_id = group_id
         solution.pupil = pupil
@@ -136,8 +118,8 @@ class SolutionsListResource(Resource):
         session.add(solution)
         session.commit()
 
-        solutions = session.query(Solutions).filter(Solutions.pupil_id == pupil.id, Solutions.group_id == group_id,
-                                                    Solutions.task_id == task_id).order_by(Solutions.id).all()
+        solutions = session.query(Solution).filter(Solution.pupil_id == pupil.id, Solution.group_id == group_id,
+                                                   Solution.task_id == task_id).order_by(Solution.id).all()
         tries_left = task.tries_count - len(solutions)
 
         return jsonify({**solution.to_dict(only=('id', 'date_delivery', 'review_status')),
@@ -188,15 +170,14 @@ class PupilSolutionsListForTask(Resource):
         group_id = args['group_id']
         task_id = args['task_id']
 
-        check_pupil_by_id(pupil_id)
-        check_group_by_id(group_id)
-        check_task_by_id(task_id)
+        Pupil.get_entity_or_404(pupil_id)
+        Group.get_entity_or_404(group_id)
+        task = Task.get_entity_or_404(task_id)
 
         session = db_session.create_session()
-        task = session.query(Task).get(task_id)
 
-        solutions = session.query(Solutions).filter(Solutions.pupil_id == pupil_id, Solutions.group_id == group_id,
-                                                    Solutions.task_id == task_id).order_by(Solutions.id).all()
+        solutions = session.query(Solution).filter(Solution.pupil_id == pupil_id, Solution.group_id == group_id,
+                                                   Solution.task_id == task_id).order_by(Solution.id).all()
         tries_left = task.tries_count - len(solutions)
         return jsonify(
             {"solutions": [solution.to_dict(only=('id', 'date_delivery', 'review_status', 'solution_info', 'result'))
@@ -207,14 +188,9 @@ class PupilSolutionsListForTask(Resource):
 
 class PupilSolutionForTask(Resource):
     def get(self):
-        args = parser_solution_for_task.parse_args()
+        solution_id = int(rq.args['solutions_id'])
 
-        solution_id = args['solution_id']
-
-        check_solution_by_id(solution_id)
-
-        session = db_session.create_session()
-        solution = session.query(Solutions).get(solution_id)
+        solution = Solution.get_entity_or_404(solution_id)
 
         return jsonify(solution.to_dict(only=('id', 'result', 'date_delivery', 'review_status', 'solution_info')))
 
@@ -224,11 +200,9 @@ class PupilSolutionForTask(Resource):
         solution_id = args['solution_id']
         review_status = args['review_status']
 
-        check_solution_by_id(solution_id)
-
         session = db_session.create_session()
 
-        solution = session.query(Solutions).get(solution_id)
+        solution = Solution.get_entity_or_404(solution_id)
 
         check_permission(current_user, solution.group_id)
 

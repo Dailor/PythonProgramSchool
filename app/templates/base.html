@@ -20,6 +20,17 @@
     <!-- Custom styles for this template-->
     <link href="{{ url_for('static', filename='css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="{{ url_for('static', filename='vendor/jquery/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="{{ url_for('static', filename='vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+
+    <!-- Custom-->
+    <script src="{{ url_for('static', filename='js/sb-admin-2.min.js') }}"></script>
+
     {% block style %}
 
     {# В этом блоке дополнительные стили для страницы #}
@@ -89,18 +100,27 @@
 
 {% if current_user.is_authenticated %}
     {% if current_user.is_teacher %}
-        {% include '/teacher/add_topic_modal.html' %}
+        {% include '/teacher/modal-add-course.html' %}
+    {% elif current_user.is_pupil %}
+        {% include '/pupil/modal-change-profile.html' %}
     {% endif %}
 {% endif %}
-<!-- Bootstrap core JavaScript-->
-<script src="{{ url_for('static', filename='vendor/jquery/jquery.min.js') }}"></script>
-<script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
-<!-- Core plugin JavaScript-->
-<script src="{{ url_for('static', filename='vendor/jquery-easing/jquery.easing.min.js') }}"></script>
 
 <!-- Custom scripts for all pages-->
-<script src="{{ url_for('static', filename='js/sb-admin-2.min.js') }}"></script>
+
+<script>
+
+{% if current_user.is_authenticated %}
+const userId = {{current_user.id}}
+    {% if current_user.is_teacher %}
+const teacherId = {{current_user.teacher.id}}
+    {% elif current_user.is_pupil %}
+const pupilId = {{current_user.pupil.id}}
+    {% endif %}
+{% endif %}
+
+</script>
 
 {% block javascript %}
 
@@ -108,9 +128,6 @@
 
 {% endblock %}
 
-{% if current_user.is_teacher %}
-<script src="{{ url_for('static', filename='js/teacher/add_topic.js', version=STATIC_FILES_VERSION) }}"></script>
-{% endif %}
 
 </body>
 </html>

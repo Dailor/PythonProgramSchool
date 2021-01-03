@@ -2,13 +2,13 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField
 from wtforms.validators import DataRequired, EqualTo, ValidationError
 
-from app.api.parsers_data_checker.checkers import CheckPassword
+from app.api.utils.parser.checkers import CheckPassword
 
 
 class PasswordChecker:
     def __call__(self, form, field):
         try:
-            CheckPassword().check_string(field.data)
+            CheckPassword.check_string(field.data)
         except Exception as e:
             raise ValidationError(e)
 

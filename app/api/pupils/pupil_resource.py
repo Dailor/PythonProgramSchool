@@ -8,17 +8,8 @@ from flask import jsonify
 from flask_restful import Resource, abort
 
 
-def check_pupil_by_id(pupil_id):
-    session = db_session.create_session()
-    pupil = session.query(Pupil).get(pupil_id)
-    if not pupil:
-        abort(404, error="Ученик с {} ID не найден".format(pupil_id))
-
-
-def check_group(group, group_id):
-    if group is None:
-        abort(404, error=f'Группа с {group_id} id не найдена')
-    return group
+def pupil_serializer(pupil):
+    return pupil.to_dict(only=('id', 'user.full_name', 'user.confident_info', 'groups_id',))
 
 
 class PupilListResource(Resource):
@@ -27,29 +18,29 @@ class PupilListResource(Resource):
 
         pupils = session.query(Pupil).all()
 
-        return jsonify({"pupils": [pupil.to_dict() for pupil in pupils]})
+        return jsonify({"pupils": [pupil_serializer(pupil) for pupil in pupils]})
 
 
 class PupilResource(Resource):
     def post(self, pupil_id):
-        check_pupil_by_id(pupil_id)
-
         args = parser.parse_args()
         session = db_session.create_session()
 
-        pupil = session.query(Pupil).get(pupil_id)
-        pupil.groups = [check_group(session.query(Group).get(group_id), group_id) for group_id in args['groups_id[]']]
+        pupil = Pupil.get_entity_or_404(pupil_id)
+        pupil.groups = session.query(Group).filter(Group.id.in_(args['groups_id[]'])).all()
+        pupil_groups_id = [group.id for group in pupil.groups]
+
+        if len(pupil_groups_id) and  not any(group_id in pupil_groups_id for group_id in args['groups_id[]']) :
+            return abort(404, error='Вы пытаетесь добавить ученика в группу которой нет')
 
         session.merge(pupil)
         session.commit()
 
-        return jsonify(pupil.to_dict())
+        return jsonify(pupil_serializer(pupil))
 
     def delete(self, pupil_id):
-        check_pupil_by_id(pupil_id)
-
         session = db_session.create_session()
-        pupil = session.query(Pupil).get(pupil_id)
+        pupil = Pupil.get_entity_or_404(pupil_id)
 
         session.delete(pupil)
         session.commit()

@@ -1,6 +1,4 @@
-var url_api_groups = '/admin/api_group';
-var url_api_get_teachers_dict = '/admin/api_teacher/get_dict';
-var url_api_get_subjects_dict = '/admin/api_subject/get_dict';
+var url_api_groups = '/admin/api/group';
 var active_status_dict = {1:'Обучается',
                           0: 'Закончен'};
 
@@ -10,24 +8,6 @@ var dataSrc = 'groups';
 function wrap_in_tag(tag, string){
     return `<${tag}>${string}</${tag}>`;
 }
-
-function get_dict_from_api(url){
-    $.ajax({
-    async: false,
-    url: url,
-    success: function(data, textStatus, jqXHR){
-    if(url == url_api_get_teachers_dict){
-        teachers_dict = data;
-    }
-    else if(url == url_api_get_subjects_dict){
-        subjects_dict = data;
-    }},
-    error: function(jqXHR, textStatus, errorThrown){
-        alert("Произошла ошибка при загрузке данных, попробуйте перезагрузить страницу.");
-    }
-    })
-}
-
 
 
 function error_ajax_crud(func_default, jqXHR, textStatus, errorThrown){
@@ -44,7 +24,7 @@ function error_ajax_crud(func_default, jqXHR, textStatus, errorThrown){
 columns = [{id: 'id',
             data: 'id',
             title: 'ID',
-            type: 'readonly',
+            type: 'hidden',
             },
 
            {id: 'name',
@@ -90,17 +70,17 @@ columns = [{id: 'id',
                     }
             },
 
-            {id: 'topics',
-            data: 'topics_id_list',
-            title: "Категории",
+            {id: 'courses_id_list',
+            data: 'courses_id',
+            title: "Курсы",
             type: 'select',
             select2 : { width: "100%",
                         theme: 'bootstrap4'},
             multiple : true,
-            options: topics_dict,
+            options: courses_dict,
             render: function(data, type, row, meta){
                         if (data == null || row == null) return null;
-                        return data.map(topic_id => wrap_in_tag('div', topics_dict[topic_id])).join('\n');
+                        return data.map(course_id => wrap_in_tag('div', courses_dict[course_id])).join('\n');
             }}];
 
 buttons = [{text: 'Добавить',

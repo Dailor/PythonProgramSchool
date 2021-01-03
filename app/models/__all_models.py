@@ -2,18 +2,20 @@ from . import user
 from . import pupil
 from . import teacher
 from . import subject
-from . import topic
+from . import course
 from . import task
 from . import submission
 from . import lesson
 from . import group
+from . import contest_system
 
 from .user import *
 from .pupil import *
 from .teacher import *
 from .subject import *
-from .topic import *
+from .course import *
 from .task import *
 from .submission import *
 from .lesson import *
 from .group import *
+from .contest_system import *

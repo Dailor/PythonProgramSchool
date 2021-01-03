@@ -2,9 +2,9 @@ const wait_solution = 'На проверке';
 const success_solution = 'Принято';
 const failed_solution = 'Не принято';
 
-const url_all_solutions = '/api_solutions';
-const url_solutions_checker = '/api_solution'
-const url_get_solution_on_task = '/pupil/api_solution_on_task';
+const url_all_solutions = '/api/solutions';
+const url_solutions_checker = '/api/solution'
+const url_get_solution_on_task = '/pupil/api/solution_on_task';
 
 const time_check_task = 5000;
 
@@ -53,6 +53,10 @@ function add_solution(solution){
 function setSolutionInfoInModal(solution_id_clicked){
     var solution_by_id = all_solutions[solution_id_clicked];
     var solution_info_clicked = solution_by_id.solution_info;
+
+    if(solution_info_clicked === null){
+        return;
+    }
 
     solution_info_modal.find('#modal-solution-info').html('');
 
@@ -152,6 +156,9 @@ $(document).ready(function(){
     if(is_teacher == true){
         editor.doc.cantEdit = true;
     }
+    if(deadline){
+        start_timer('deadline', new Date(deadline), 'lesson_deadline');
+    }
 })
 
 function changeSolutionReviewStatus(solution){
@@ -162,12 +169,12 @@ function changeSolutionReviewStatus(solution){
 }
 
 function setCheckerOnTimer(solution_id){
-    var data = {"solutions_id": []};
-    for(var sol_id in all_solutions){
-        if(all_solutions[sol_id].review_status === null){
-            data.solutions_id.push(sol_id);
-        }
-    }
+    var data = {"solutions_id": solution_id};
+//    for(var sol_id in all_solutions){
+//        if(all_solutions[sol_id].review_status === null){
+//            data.solutions_id.push(sol_id);
+//        }
+//    }
     $.ajax({
         url: url_solutions_checker,
         type: 'GET',

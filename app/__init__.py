@@ -46,8 +46,8 @@ def blueprint_routes_register():
 
 
 def api_register():
-    api.add_resource(PupilSolutionForTask, '/api_solution')
-    api.add_resource(PupilSolutionsListForTask, '/api_solutions')
+    api.add_resource(PupilSolutionForTask, '/api/solution')
+    api.add_resource(PupilSolutionsListForTask, '/api/solutions')
     api.add_resource(SolutionCheckerResource, config_app.CheckerConfig.CALLBACK_ADDRESS)
 
 

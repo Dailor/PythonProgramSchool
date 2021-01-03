@@ -12,18 +12,18 @@
 </li>
 
 <li class="nav-item">
-    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTopics" aria-expanded="false"
-       aria-controls="collapseTopics">
+    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseCourses" aria-expanded="false"
+       aria-controls="collapseCourses">
         <i class="fas fa-fw"></i>
         <span>Категории</span>
     </a>
-    <div id="collapseTopics" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar" style="">
+    <div id="collapseCourses" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar" style="">
         <div class="bg-white py-2 collapse-inner rounded">
-            {% for topic in current_user.teacher.topics%}
-            <a class="collapse-item" href="/teacher/topics/{{topic.id}}">{{topic.name}}</a>
+            {% for course in current_user.teacher.courses %}
+                <a class="collapse-item" href="/teacher/course/{{course.id}}">{{course.name}}</a>
             {% endfor %}
             <hr>
-            <button class="btn collapse-item" data-toggle="modal" data-target="#add_topic">Добавить</button>
+            <button class="btn collapse-item" data-toggle="modal" data-target="#add_course">Добавить</button>
         </div>
     </div>
 </li>

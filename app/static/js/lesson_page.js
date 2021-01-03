@@ -55,3 +55,9 @@ function task_results(task_id){
         card_body.attr('selected', true);
     }
 }
+
+$().ready(function(){
+  if(deadline){
+    start_timer('deadline', new Date(deadline), 'lesson_deadline');
+  }
+})

@@ -1,4 +1,4 @@
-url_api_user = '/admin/api_user';
+url_api_user = '/admin/api/user';
 url_set_role = url_api_user + '/role';
 
 
@@ -24,12 +24,15 @@ function wrap_in_tag(tag, string){
 
 function error_ajax_crud(func_default, jqXHR, textStatus, errorThrown){
     func_default(jqXHR, textStatus, errorThrown);
-    if('error' in jqXHR.responseJSON){
-        $(".modal-body").children(".alert").text(jqXHR.responseJSON.error).prepend(error_crud_msg);
-    }
-    else if('message' in jqXHR.responseJSON){
-        for(var key in jqXHR.responseJSON.message)
-        $(".modal-body").children(".alert").text(jqXHR.responseJSON.message[key]).prepend(error_crud_msg);
+    if('message' in jqXHR.responseJSON){
+        var errors = jqXHR.responseJSON.message;
+        if(typeof errors == "string"){
+            $(".modal-body").children(".alert").text(errors).prepend(error_crud_msg);
+        }
+        else{
+            for(var key in errors)
+            $(".modal-body").children(".alert").text(jqXHR.responseJSON.message[key]).prepend(error_crud_msg);
+        }
     }
 
 }
@@ -85,44 +88,23 @@ columns = [{id: 'id',
             required: true,
             data: 'email',
             title: 'Почта',
-            type: 'text',
-            pattern:  "\\w+@[a-zA-Z]+?\\.[a-zA-Z]{2,6}",
+            type: 'email',
+            // pattern:  "\\w+@[a-zA-Z]+?\\.[a-zA-Z]{2,6}",
             errorMsg: "*Неправильный формат почты",
             hoverMsg: "Пример: test@exmple.com",},
 
-           {id: 'roles',
-            data: 'roles',
+           {id: 'role_id',
+            data: 'role_id',
             title: 'Роли',
-            type: 'readonly'},
-
-            {id: 'set_role',
-            title: "Назначить роль",
-            type: 'readonly',
+            type: 'select',
+            select2 : { width: "100%",
+                        theme: 'bootstrap4'},
+            options: all_roles,
             render: function(data, type, row, meta){
-                var result = '';
+                if (data == null || row == null) return null;
+                return all_roles[data];
+            }},
 
-                if(row.roles != null){
-                    return result;
-                }
-
-                var role_name;
-                var btn_type_class;
-
-
-                for(var index = 0; index < roles_setter_btn_class.length; index++){
-                    role_name = roles_setter_btn_class[index][0];
-                    btn_type_class = roles_setter_btn_class[index][1];
-                    params_function = string_in_quotes(role_name) + ", " + row.id;
-                    button_html = `<button class="btn ${btn_type_class}" onclick="set_role(${params_function})">${role_name}</button>`;
-                    result += `<div class="p-1">${button_html}</div>`;
-
-                }
-
-                return result;
-            },
-
-            searchable: false
-            },
 
             {id: 'confident_info',
             data:'confident_info',
@@ -246,7 +228,7 @@ $(document).ready(function() {
         },
         onDeleteRow: function(datatable, rowdata, success, error) {
             $.ajax({
-                url: url_api_user,
+                url: url_api_user + '/' + rowdata.id,
                 type: 'DELETE',
                 data: rowdata,
                 success: success,

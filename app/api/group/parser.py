@@ -14,11 +14,11 @@ def id_list(data):
     return result
 
 
-parser_teacher = reqparse.RequestParser()
-parser_teacher.add_argument('name', required=True, type=str.strip, location='json')
-parser_teacher.add_argument('is_active', required=True, type=to_bool, location='json')
-parser_teacher.add_argument('subject_id', required=True, type=int, location='json')
-parser_teacher.add_argument('topics_id_list', required=True, type=id_list, location='json')
+parser = reqparse.RequestParser()
+parser.add_argument('name', required=True, type=str.strip, location='json')
+parser.add_argument('is_active', required=True, type=to_bool, location='json')
+parser.add_argument('subject_id', required=True, type=int, location='json')
+parser.add_argument('courses_id', required=True, type=id_list, location='json')
 
-parser_admin = parser_teacher.copy()
+parser_admin = parser.copy()
 parser_admin.add_argument('teacher_id', required=True, type=int, location='json')

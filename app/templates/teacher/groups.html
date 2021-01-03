@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{group_name}}{% endblock %}
+{% block title %}Группы{% endblock %}
 
 {% block style %}
 <link href="{{url_for('static', filename='vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
@@ -14,15 +14,15 @@
 {% endblock %}
 
 {% block javascript %}
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 <script>
     groups = {{ groups|tojson }}
-    topics = {{ topics|tojson }}
+    courses = {{ courses|tojson }}
     subjects = {{ subjects|tojson }}
 
 </script>
 <script src="{{ url_for('static', filename='js/teacher/groups.js', version=STATIC_FILES_VERSION) }}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+
 {% endblock %}
 
 {% block content %}
@@ -36,12 +36,11 @@
                 <div class="card-body p-0">
                     <ul class="list-group-flush p-0">
                         {% for group_id in groups %}
-                        {% set group = groups[group_id] %}
                         <li class="list-group-item d-flex justify-content-between" id="group-data-{{group_id}}">
-                            <a class="nav-link p-0" href="/teacher/groups/{{group_id}}/lessons" id="group-name-view">{{group['name']}}</a>
+                            <a class="nav-link p-0" href="/teacher/groups/{{group_id}}/lessons" id="group-name-view">{{groups[group_id].name}}</a>
                             <div>
                                 <button class="btn btn-info btn-sm" onclick="show_pupil({{group_id}})">Ученики</button>
-                                <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#change-topics" onclick="editing_group_now({{group_id}})">
+                                <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#change-courses" onclick="editing_group_now({{group_id}})">
                                     Изменить
                                 </button>
                             </div>
@@ -66,7 +65,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="change-topics" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="change-courses" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -99,10 +98,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="group-topics">Категории</label>
-                    <select multiple name="topics" id="group-topics">
-                        {% for topic_id in topics %}
-                        <option value="{{ topic_id }}">{{topics[topic_id]}}</option>
+                    <label for="group-courses">Категории</label>
+                    <select multiple name="courses" id="group-courses">
+                        {% for course_id in courses %}
+                        <option value="{{ course_id }}">{{courses[course_id]}}</option>
                         {% endfor %}
                     </select>
                 </div>

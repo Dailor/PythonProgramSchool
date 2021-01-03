@@ -1,5 +1,5 @@
-var url_api_lesson_available = '/teacher/lesson_available_api';
-var url_api_solutions = '/teacher/api_solutions/';
+var url_api_lesson_available = '/teacher/api/lesson_available';
+var url_api_solutions = '/teacher/api/solutions/';
 var async_http_already = false;
 var selected_task = null;
 
@@ -137,11 +137,39 @@ function set_lesson_available(lesson_id, set_status){
         data: data,
         type: http_request_type,
         success: function(data, textStatus, jqXHR){
-                    success_set_lesson_available(data, textStatus, jqXHR, lesson_id, set_status);
+                    //success_set_lesson_available(data, textStatus, jqXHR, lesson_id, set_status);
+                    //is_lesson_available = !is_lesson_available;
                 },
         error: error_set_lesson_available,
         complete: function(jqXHR, textStatus){
                    async_http_already = false;
                   }
     })
+}
+
+function start_contest(){
+    var date_string = $('#datetime-input').val();
+    if(!date_string.length){
+        $('#datetime-error').text('Это поле объязательно');
+        return;
+    }
+
+    var date = new Date(date_string);
+    var date_utc_timestamp = date.getTime() / 1000 - 3600 * 6;
+
+    var data = {'lesson_id': lesson.id,
+                'group_id': group_id,
+                'deadline': date_utc_timestamp};
+    $.ajax({
+        url: url_api_lesson_available,
+        data: data,
+        type: "PATCH",
+        success: function(){
+                            location.reload();
+                            },
+        error: function(jqXHR, textStatus, errorThrown){
+                            debugger;
+                            $('#datetime-error').text(jqXHR.responseJSON.error);
+                        }
+    });
 }

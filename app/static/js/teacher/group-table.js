@@ -1,4 +1,4 @@
-var url_api_groups = '/teacher/api_group';
+var url_api_groups = '/teacher/api/group';
 var url_data = url_api_groups + '/' + group_id;
 
 var dataTable_groups;

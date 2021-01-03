@@ -23,6 +23,9 @@ class Submission(SqlAlchemyBase, SerializerMixin):
 
     submissions_batch = orm.relationship('SubmissionsBatch', back_populates='submissions', uselist=False)
 
+    def __eq__(self, other):
+        return self.id == other.id
+
 
 class SubmissionsBatchStatistic:
     MAX_TIME_SEC = 'max_time'
@@ -43,8 +46,10 @@ class SubmissionsBatch(SqlAlchemyBase):
     failed_tasks_count = sqlalchemy.Column(sqlalchemy.Integer, default=0)
     all_tasks_count = sqlalchemy.Column(sqlalchemy.Integer, nullable=False)
 
-    solution = orm.relationship("Solutions", back_populates='submissions_batch')
-    submissions = orm.relationship("Submission", back_populates='submissions_batch', passive_deletes=True)
+    solution = orm.relationship("Solution", back_populates='submissions_batch')
+    submissions = orm.relationship("Submission", back_populates='submissions_batch',
+                                   cascade="all, delete",
+                                   passive_deletes=True)
 
     def get_checked_count(self):
         return self.failed_tasks_count + self.accepted_tasks_count
@@ -71,3 +76,6 @@ class SubmissionsBatch(SqlAlchemyBase):
                 SubmissionsBatchStatistic.PASSED: self.accepted_tasks_count,
                 SubmissionsBatchStatistic.FAILED: self.failed_tasks_count,
                 SubmissionsBatchStatistic.COUNT: self.all_tasks_count}
+
+    def __eq__(self, other):
+        return self.id == other.id

@@ -1,4 +1,5 @@
 from .db_session import SqlAlchemyBase
+from .db_helper import DbHelper
 
 import sqlalchemy
 from sqlalchemy import orm
@@ -45,9 +46,7 @@ class TaskInfoFields:
     COUNT = 'count_all'
 
 
-class Task(SqlAlchemyBase, SerializerMixin):
-    serialize_rules = ("-lesson",)
-
+class Task(SqlAlchemyBase, SerializerMixin, DbHelper):
     __tablename__ = "tasks"
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
@@ -66,21 +65,25 @@ class Task(SqlAlchemyBase, SerializerMixin):
 
     api_check = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)
 
-    lesson_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lessons.id",  ondelete='CASCADE'))
+    lesson_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("lessons.id", ondelete='CASCADE'),
+                                  nullable=False)
 
     lesson = orm.relationship("Lesson", back_populates='tasks')
 
     def get_tests_count(self):
         return len(self.examples) + len(self.examples_hidden)
 
+    def __eq__(self, other):
+        return self.id == other.id
 
-class Solutions(SqlAlchemyBase, SerializerMixin):
+
+class Solution(SqlAlchemyBase, SerializerMixin, DbHelper):
     __tablename__ = 'solutions'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    pupil_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('pupils.id'),
+    pupil_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('pupils.id', ondelete='CASCADE'),
                                  nullable=False)
-    group_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('groups.id'),
+    group_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('groups.id', ondelete='CASCADE'),
                                  nullable=False)
     task_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('tasks.id', ondelete='CASCADE'),
                                 nullable=False)
@@ -95,3 +98,6 @@ class Solutions(SqlAlchemyBase, SerializerMixin):
     group = orm.relationship("Group", back_populates='solutions', lazy='joined')
     task = orm.relationship("Task")
     submissions_batch = orm.relationship("SubmissionsBatch", back_populates='solution', passive_deletes=True)
+
+    def __eq__(self, other):
+        return self.id == other.id

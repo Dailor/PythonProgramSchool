@@ -6,15 +6,15 @@ var chart_labels = ["Решено", "Не решено"]
 var backgroundColor = ['#1cc88a', '#E7494C'];
 var hoverBackgroundColor = ['#17a673', '#B84144'];
 
-function init_chart(group_id, topic_id){
-    var topic = statistic_for_group[group_id]['topics'][topic_id];
-    var ctx = document.getElementById(`${canvasChardId}-${group_id}-${topic_id}`);
+function init_chart(group_id, course_id){
+    var course = statistic_for_group[group_id]['courses'][course_id];
+    var ctx = document.getElementById(`${canvasChardId}-${group_id}-${course_id}`);
     var newChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
         labels: chart_labels,
         datasets: [{
-          data: [topic.solved, topic.unsolved],
+          data: [course.solved, course.unsolved],
           backgroundColor: backgroundColor,
           hoverBackgroundColor: hoverBackgroundColor,
           hoverBorderColor: "rgba(234, 236, 244, 1)",
@@ -44,8 +44,8 @@ function init_chart(group_id, topic_id){
 
 $(document).ready(function(){
     for(group_id in statistic_for_group){
-        for (topic_id in statistic_for_group[group_id].topics){
-            init_chart(group_id, topic_id);
+        for (course_id in statistic_for_group[group_id].courses){
+            init_chart(group_id, course_id);
         }
     }
 })
