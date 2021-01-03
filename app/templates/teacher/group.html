@@ -2,18 +2,17 @@
 {% block title %}{{group.name}}{% endblock %}
 
 {% block style %}
-<link href="{{url_for('static', filename='vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
+<link href="{{url_for('static', filename='vendor/datatables/dataTables.bootstrap4.min.css', version=STATIC_FILES_VERSION)}}" rel="stylesheet">
 {% endblock %}
 
 {% block javascript %}
-<script src="{{ url_for('static', filename='vendor/datatables/jquery.dataTables.min.js') }}"></script>
-<script src="{{ url_for('static', filename='vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/datatables/jquery.dataTables.min.js', version=STATIC_FILES_VERSION) }}"></script>
+<script src="{{ url_for('static', filename='vendor/datatables/dataTables.bootstrap4.min.js', version=STATIC_FILES_VERSION) }}"></script>
 
 <script>
     group_id = {{group.id}};
-
-
 </script>
+
 <script src="{{ url_for('static', filename='js/teacher/group-table.js', version=STATIC_FILES_VERSION) }}"></script>
 {% endblock %}
 
@@ -37,11 +36,6 @@
 </div>
 
 <ul class="shadow pr-0 list-group col-sm-3">
-    <li class="list-group-item">Cras justo odio</li>
-    <li class="list-group-item">Dapibus ac facilisis in</li>
-    <li class="list-group-item">Morbi leo risus</li>
-    <li class="list-group-item">Porta ac consectetur ac</li>
-    <li class="list-group-item">Vestibulum at eros</li>
 </ul>
 
 

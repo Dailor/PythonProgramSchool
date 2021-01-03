@@ -23,7 +23,7 @@
 
 </script>
 
-<script src="{{ url_for('static', filename='vendor/ckeditor/ckeditor.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/ckeditor/ckeditor.js', version=STATIC_FILES_VERSION) }}"></script>
 
 <script src="{{ url_for('static', filename='js/teacher/lesson_edit.js', version=STATIC_FILES_VERSION) }}"></script>
 {% endblock %}

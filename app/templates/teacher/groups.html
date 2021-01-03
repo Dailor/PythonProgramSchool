@@ -2,7 +2,7 @@
 {% block title %}Группы{% endblock %}
 
 {% block style %}
-<link href="{{url_for('static', filename='vendor/datatables/dataTables.bootstrap4.min.css')}}" rel="stylesheet">
+<link href="{{url_for('static', filename='vendor/datatables/dataTables.bootstrap4.min.css', version=STATIC_FILES_VERSION)}}" rel="stylesheet">
 <!-- select2 -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet"/>
 
@@ -10,7 +10,6 @@
 <link href="https://raw.githack.com/ttskch/select2-bootstrap4-theme/master/dist/select2-bootstrap4.css"
       rel="stylesheet"> <!-- for live demo page -->
 
-<link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
 {% endblock %}
 
 {% block javascript %}

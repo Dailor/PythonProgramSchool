@@ -7,7 +7,7 @@
 
 {% block javascript %}
 
-<script src="{{url_for('static', filename='/vendor/chart.js/Chart.min.js')}}"></script>
+<script src="{{url_for('static', filename='/vendor/chart.js/Chart.min.js', version=STATIC_FILES_VERSION)}}"></script>
 
 <script>
     statistic_for_group = {{ statistic_for_group|tojson }}

@@ -15,7 +15,7 @@
     {% elif current_user.is_teacher %}
     {% include "sidebar/teacher.html" %}
 
-    {% else %}
+    {% elif current_user.is_pupil %}
     {% include "sidebar/pupil.html" %}
 
     {% endif %}
