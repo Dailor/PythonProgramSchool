@@ -163,7 +163,7 @@ def groups_page():
     session = db_session.create_session()
 
     groups = {group.id: group.to_dict(
-        only=('id', 'name', 'pupils.id', 'pupils.user.full_name', 'subject_id', 'is_active', 'courses.id')) for group
+        only=('id', 'name', 'pupils.id', 'pupils.user.full_name', 'is_active', 'courses.id')) for group
         in current_teacher.groups}
     courses = {course.id: course.name for course in session.query(Course).all()}
 

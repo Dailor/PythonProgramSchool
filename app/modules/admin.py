@@ -33,8 +33,6 @@ def register_resources():
     api.add_resource(CourseListResource, '/course')
     api.add_resource(CourseResource, '/course/<int:course_id>')
 
-    # api.add_resource(SubjectResource, '/subject/<int:subject_id>')
-    # api.add_resource(SubjectListResource, '/subject')
 
 
 
