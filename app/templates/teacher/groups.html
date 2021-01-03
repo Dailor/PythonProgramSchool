@@ -17,7 +17,6 @@
 <script>
     groups = {{ groups|tojson }}
     courses = {{ courses|tojson }}
-    subjects = {{ subjects|tojson }}
 
 </script>
 <script src="{{ url_for('static', filename='js/teacher/groups.js', version=STATIC_FILES_VERSION) }}"></script>
@@ -85,14 +84,6 @@
                     <select class="form-control" id="group-status">
                         <option value="1">Обучается</option>
                         <option value="0">Закончен</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="group-subject">Предмет</label>
-                    <select class="form-control" id="group-subject">
-                        {% for subject_id in subjects %}
-                        <option value="{{ subject_id }}">{{subjects[subject_id]}}</option>
-                        {% endfor %}
                     </select>
                 </div>
 

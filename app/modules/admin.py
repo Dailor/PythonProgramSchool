@@ -1,11 +1,10 @@
 from app.models import db_session
-from app.models.__all_models import UserRoles, Course, Teacher, Group, Subject
+from app.models.__all_models import UserRoles, Course, Teacher, Group
 
 from app.api.user.user_resource import UserListResource, UserResource
 from app.api.group.group_resource import GroupListResource, GroupResource
 from app.api.teacher.teacher_resource import TeacherListResource, TeacherResource
 from app.api.pupils.pupil_resource import PupilListResource, PupilResource
-from app.api.subject.subject_resource import SubjectListResource, SubjectResource
 from app.api.course.course_resource import CourseListResource, CourseResource
 
 from flask import blueprints as bl_module
@@ -34,8 +33,8 @@ def register_resources():
     api.add_resource(CourseListResource, '/course')
     api.add_resource(CourseResource, '/course/<int:course_id>')
 
-    api.add_resource(SubjectResource, '/subject/<int:subject_id>')
-    api.add_resource(SubjectListResource, '/subject')
+    # api.add_resource(SubjectResource, '/subject/<int:subject_id>')
+    # api.add_resource(SubjectListResource, '/subject')
 
 
 
@@ -69,21 +68,14 @@ def pupils_table():
     groups_dict = {group.id: group.name for group in session.query(Group).all()}
     return render_template("admin/pupils.html", groups_dict=groups_dict)
 
-
-@blueprint.route('/subjects')
-def subjects_table():
-    return render_template("admin/subjects.html")
-
-
 @blueprint.route('/groups')
 def groups_table():
     session = db_session.create_session()
 
     teachers_dict = {teacher.id: teacher.user.full_name for teacher in session.query(Teacher).all()}
-    subjects_dict = {subject.id: subject.name for subject in session.query(Subject).all()}
     courses_dict = {course.id: course.name for course in session.query(Course).all()}
 
-    return render_template("admin/groups.html", teachers_dict=teachers_dict, subjects_dict=subjects_dict,
+    return render_template("admin/groups.html", teachers_dict=teachers_dict,
                            courses_dict=courses_dict)
 
 

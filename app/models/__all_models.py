@@ -1,7 +1,6 @@
 from . import user
 from . import pupil
 from . import teacher
-from . import subject
 from . import course
 from . import task
 from . import submission
@@ -12,7 +11,6 @@ from . import contest_system
 from .user import *
 from .pupil import *
 from .teacher import *
-from .subject import *
 from .course import *
 from .task import *
 from .submission import *

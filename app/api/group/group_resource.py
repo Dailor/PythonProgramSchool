@@ -1,7 +1,5 @@
-import os
-
 from app.models import db_session
-from app.models.__all_models import Group, Subject, Teacher, Course
+from app.models.__all_models import Group, Teacher, Course
 
 from .parser import parser, parser_admin
 
@@ -9,7 +7,7 @@ from flask import jsonify
 from flask_restful import Resource, abort
 from flask_login import current_user
 
-groups_only_admin = ('id', 'name', 'is_active', 'subject_id', 'teacher_id', 'courses_id')
+groups_only_admin = ('id', 'name', 'is_active', 'teacher_id', 'courses_id')
 
 
 class GroupListResource(Resource):
@@ -34,14 +32,10 @@ class GroupListResource(Resource):
 
         courses_id_list = args['courses_id']
 
-        subject = session.query(Subject).get(args['subject_id'])
         teacher = session.query(Teacher).get(args['teacher_id'])
         courses = session.query(Course).filter(Course.id.in_(courses_id_list)).all()
 
         group_same_name = session.query(Group).filter(Group.name == args['name']).first()
-
-        if not subject:
-            return abort(404, error="Предмета с таким ID нет")
 
         if not teacher:
             return abort(404, error="Учителя с таким ID нет")
@@ -61,13 +55,7 @@ class GroupListResource(Resource):
         group.is_active = args['is_active']
         group.courses = courses
 
-        if teacher not in subject.teachers:
-            subject.teachers.append(teacher)
-
-        subject.groups.append(group)
-
         session.add(group)
-        session.merge(subject)
         session.commit()
 
         return jsonify(group.to_dict(only=groups_only_admin))
@@ -96,8 +84,6 @@ class GroupResource(Resource):
             admin_args = parser_admin.parse_args()
             teacher = session.query(Teacher).get(admin_args['teacher_id'])
 
-        subject = Subject.get_entity_or_404(args['subject_id'])
-
         courses = session.query(Course).filter(Course.id.in_(courses_id)).all()
 
         if len(courses) != len(courses_id):
@@ -108,12 +94,6 @@ class GroupResource(Resource):
         group.name = args['name']
         group.is_active = args['is_active']
         group.teacher = teacher
-
-        if teacher not in subject.teachers:
-            subject.teachers.append(teacher)
-
-        if group not in subject.groups:
-            subject.groups.append(group)
 
         group.courses = courses
 

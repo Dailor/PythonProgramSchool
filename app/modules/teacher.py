@@ -1,7 +1,7 @@
 from app.config_app import CheckerConfig
 
 from app.models import db_session
-from app.models.__all_models import Group, Course, Lesson, Pupil, Task, ProgrammingLanguage, Subject
+from app.models.__all_models import Group, Course, Lesson, Pupil, Task, ProgrammingLanguage
 
 from app.models.queries import count_tasks_solved_for_lessons_by_pupils_in_group, \
     count_tasks_in_each_lesson_available_for_group
@@ -166,9 +166,8 @@ def groups_page():
         only=('id', 'name', 'pupils.id', 'pupils.user.full_name', 'subject_id', 'is_active', 'courses.id')) for group
         in current_teacher.groups}
     courses = {course.id: course.name for course in session.query(Course).all()}
-    subjects = {subject.id: subject.name for subject in session.query(Subject).all()}
 
-    return render_template('/teacher/groups.html', groups=groups, courses=courses, subjects=subjects)
+    return render_template('/teacher/groups.html', groups=groups, courses=courses)
 
 
 @blueprint.route('/lesson_view/<int:lesson_id>')

@@ -26,10 +26,8 @@ class Group(SqlAlchemyBase, SerializerMixin, DbHelper):
     is_active = sqlalchemy.Column(sqlalchemy.Boolean, default=True)
     invite_code = sqlalchemy.Column(sqlalchemy.String(255), unique=True, nullable=False)
 
-    subject_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("subjects.id"))
     teacher_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("teachers.id"))
 
-    subject = orm.relationship("Subject", uselist=False, back_populates="groups")
     teacher = orm.relationship("Teacher", uselist=False, back_populates="groups")
     pupils = orm.relationship("Pupil", secondary='pupils_to_groups', back_populates="groups", lazy='joined')
 

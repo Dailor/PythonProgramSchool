@@ -18,9 +18,6 @@ class RegistrationForm(FlaskForm):
     password = PasswordField("Пароль", validators=[DataRequired()])
     password_repeat = PasswordField("Повторите пароль", validators=[DataRequired()])
 
-    subjects = SelectMultipleField("Предметы", choices=[], validators=[DataRequired()])
-    groups = SelectMultipleField("Группы", choices=[], validators=[DataRequired()])
-
     submit = SubmitField('Создать аккаунт')
 
     def check_password_equal(self):

@@ -47,18 +47,6 @@ columns = [{id: 'id',
                     }
             },
 
-           {id: 'subject_id',
-            required: true,
-            data: 'subject_id',
-            title: 'Предметы',
-            type: 'select',
-            options: subjects_dict,
-            render: function(data, type, row, meta){
-                        if (data == null || row == null) return null;
-                        return subjects_dict[data];
-                    }
-            },
-
            {id: 'teacher_id',
             data: 'teacher_id',
             title: 'Учитель',

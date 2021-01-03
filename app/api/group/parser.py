@@ -17,7 +17,6 @@ def id_list(data):
 parser = reqparse.RequestParser()
 parser.add_argument('name', required=True, type=str.strip, location='json')
 parser.add_argument('is_active', required=True, type=to_bool, location='json')
-parser.add_argument('subject_id', required=True, type=int, location='json')
 parser.add_argument('courses_id', required=True, type=id_list, location='json')
 
 parser_admin = parser.copy()

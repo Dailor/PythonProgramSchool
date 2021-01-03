@@ -16,7 +16,6 @@ def teacher_serializer(teacher):
     teacher_serialized = user_serializer(teacher.user)
     teacher_serialized['id'] = teacher.id
     teacher_serialized['groups'] = '\n'.join(teacher.get_string_groups())
-    teacher_serialized['subjects'] = '\n'.join(teacher.get_string_subjects())
     return teacher_serialized
 
 
