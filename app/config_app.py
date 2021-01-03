@@ -34,7 +34,7 @@ class SecretData:
 
 
 class StaticConfig:
-    STATIC_FILES_VERSION = 3
+    STATIC_FILES_VERSION = 5
 
 
 class DefaultAdminConfig:
@@ -46,7 +46,7 @@ class DefaultAdminConfig:
 
 
 class CheckerConfig:
-    DOMAIN = "http://0153cdabfb29.ngrok.io"
+    DOMAIN = "https://ramazan.school"
 
     CHECKER_HOST = 'http://178.159.39.154'
     BATCH_SUBS_URL = CHECKER_HOST + '/submissions/batch'
