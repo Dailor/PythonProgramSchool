@@ -56,7 +56,7 @@ class Group(SqlAlchemyBase, SerializerMixin, DbHelper):
         self.invite_code = os.urandom(64).hex()
 
     def is_have_permission(self, user):
-        if not (self.teacher_id == user.teacher.id or user.is_admin):
+        if not (user.is_admin or self.teacher_id == user.teacher.id):
             return abort(403)
 
     @staticmethod
