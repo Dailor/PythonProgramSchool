@@ -21,6 +21,7 @@ const group_id = {{group_id|tojson}};
 {% if lesson_available %}
     {% set lesson_deadline = (lesson_available.deadline.timestamp() + 3600 * 6) * 1000 if lesson_available.deadline else None %}
     var deadline = {{lesson_deadline|tojson}};
+    var deadline_db = {{lesson_available.deadline.timestamp()}}
 {% else %}
     var deadline = null;
 {% endif %}

@@ -13,7 +13,7 @@ class Course(SqlAlchemyBase, SerializerMixin, DbHelper):
 
     curators = orm.relationship("Teacher", secondary='course_to_teacher', back_populates='courses')
     groups = orm.relationship('Group', secondary='course_to_group', back_populates='courses', lazy='joined')
-    lessons = orm.relationship("Lesson", back_populates='course',
+    lessons = orm.relationship("Lesson", back_populates='course', order_by="Lesson.id.desc()",
                                cascade="all, delete",
                                passive_deletes=True)
 

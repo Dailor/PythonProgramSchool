@@ -11,5 +11,5 @@ class DbHelper:
         entity = session.query(cls).get(entity_id)
 
         if entity is None:
-            return abort(404, cls.NOT_FOUND_MSG.format(cls.__name__, entity_id))
+            return abort(404, message=cls.NOT_FOUND_MSG.format(cls.__name__, entity_id))
         return entity

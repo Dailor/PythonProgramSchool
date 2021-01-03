@@ -34,7 +34,8 @@ class Group(SqlAlchemyBase, SerializerMixin, DbHelper):
     pupils = orm.relationship("Pupil", secondary='pupils_to_groups', back_populates="groups", lazy='joined')
 
     courses = orm.relationship("Course", secondary='course_to_group', back_populates='groups')
-    lessons = orm.relationship("Lesson", secondary='lesson_to_group', back_populates='groups')
+    lessons = orm.relationship("Lesson", secondary='lesson_to_group', back_populates='groups',
+                               order_by="Lesson.id.desc()")
     solutions = orm.relationship("Solution", back_populates='group', lazy='joined',
                                  cascade="all, delete",
                                  passive_deletes=True)

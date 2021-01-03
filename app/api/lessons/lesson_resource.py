@@ -147,7 +147,7 @@ class LessonAvailableListResource(Resource):
 
         session = db_session.create_session()
 
-        lesson = Lesson.get_entity_or_404(group_id)
+        lesson = Lesson.get_entity_or_404(lesson_id)
         group = Group.get_entity_or_404(group_id)
 
         if not (lesson.course in group.courses):
