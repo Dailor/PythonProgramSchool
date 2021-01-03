@@ -24,7 +24,7 @@ class MailConfig:
     MAIL_PORT = 465
     MAIL_USE_TLS = False
     MAIL_USE_SSL = True
-    MAIL_USERNAME = "goprog.clevers@gmail.com"
+    MAIL_USERNAME = "ramazan.school.2021@gmail.com"
     MAIL_PASSWORD = "0efe5eb4d94b5d55"
     MAIL_DEFAULT_SENDER = "noreply@goprog.kz"
 
