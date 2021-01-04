@@ -31,9 +31,10 @@ class Group(SqlAlchemyBase, SerializerMixin, DbHelper):
     teacher = orm.relationship("Teacher", uselist=False, back_populates="groups")
     pupils = orm.relationship("Pupil", secondary='pupils_to_groups', back_populates="groups", lazy='joined')
 
-    courses = orm.relationship("Course", secondary='course_to_group', back_populates='groups')
+    courses = orm.relationship("Course", secondary='course_to_group', back_populates='groups',
+                               order_by="Course.id")
     lessons = orm.relationship("Lesson", secondary='lesson_to_group', back_populates='groups',
-                               order_by="Lesson.id.desc()")
+                               order_by="Lesson.course_id, Lesson.id.desc()")
     solutions = orm.relationship("Solution", back_populates='group', lazy='joined',
                                  cascade="all, delete",
                                  passive_deletes=True)
@@ -67,3 +68,6 @@ class Group(SqlAlchemyBase, SerializerMixin, DbHelper):
             return abort(403)
 
         return group
+
+    def all_lessons(self):
+        return [lesson for course in self.courses for lesson in course.lessons]

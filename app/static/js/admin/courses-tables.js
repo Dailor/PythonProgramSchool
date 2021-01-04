@@ -46,10 +46,12 @@ columns = [{id: 'id',
             data: 'curators_id',
             title: 'Учитель',
             type: 'select',
+            select2 : { width: "100%",
+                        theme: 'bootstrap4'},
+            multiple : true,
             options: teachers_dict,
             render: function(data, type, row, meta){
                         if (data == null || row == null) return null;
-                        return teachers_dict[data];
                         return data.map(teacher_id => wrap_in_tag('div', teachers_dict[teacher_id])).join('\n');
                     }
             },
@@ -152,7 +154,8 @@ $(document).ready(function() {
             $.ajax({
                 url: url_api_topics,
                 type: 'PUT',
-                data: rowdata,
+                data: JSON.stringify(rowdata),
+                contentType: "application/json",
                 success: success,
                 error: function(jqXHR, textStatus, errorThrown){
                     error_ajax_crud(error, jqXHR, textStatus, errorThrown);
@@ -164,7 +167,8 @@ $(document).ready(function() {
             $.ajax({
                 url: url_api_topics + '/' + rowdata.id,
                 type: 'POST',
-                data: rowdata,
+                data: JSON.stringify(rowdata),
+                contentType: "application/json",
                 success: success,
                 error: function(jqXHR, textStatus, errorThrown){
                     error_ajax_crud(error, jqXHR, textStatus, errorThrown);

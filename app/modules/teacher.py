@@ -125,7 +125,7 @@ def group_lessons_page(group_id):
         progress_solved_tasks_by_pupils[lesson.id] = task_solved, count_task_from_lessons_available_for_group.get(
             lesson.id, 1)
 
-    return render_template('lessons_for_group.html', group=group, lessons=lessons,
+    return render_template('lessons_for_group.html', group=group,
                            progress_solved_tasks_by_pupils=progress_solved_tasks_by_pupils)
 
 

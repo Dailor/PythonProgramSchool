@@ -191,7 +191,7 @@ class LessonAvailableListResource(Resource):
         lesson_id = args['lesson_id']
         deadline = args['deadline']
 
-        deadline_datetime = datetime.utcfromtimestamp(deadline)
+        deadline_datetime = datetime.fromtimestamp(deadline)
         if deadline_datetime < datetime.utcnow():
             return abort(400, error='Дата должна быть позже чем сейчас')
 

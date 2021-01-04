@@ -21,10 +21,10 @@ const group_id = {{group_id|tojson}};
 {% if lesson_available %}
     {% set lesson_deadline = (lesson_available.deadline.timestamp() + 3600 * 6) * 1000 if lesson_available.deadline else None %}
     var deadline = {{lesson_deadline|tojson}};
-    var deadline_db = {{lesson_available.deadline.timestamp()}}
 {% else %}
     var deadline = null;
 {% endif %}
+
 
 </script>
 <script src="{{ url_for('static', filename='js/lesson_page.js', version=STATIC_FILES_VERSION) }}"></script>
@@ -59,7 +59,7 @@ const group_id = {{group_id|tojson}};
     {% endif %}
 
     {% if lesson_available and lesson_available.deadline %}
-        <span class="text-danger">Осталось времени на решение задач: <span id="lesson_deadline"></span></span>
+    <span class="text-danger">Осталось времени на решение задач: <span id="lesson_deadline"></span></span>
     {% endif %}
 
     <div class="lesson-material row my-3">

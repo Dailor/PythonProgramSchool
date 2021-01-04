@@ -28,7 +28,7 @@ class Course(SqlAlchemyBase, SerializerMixin, DbHelper):
 
     def curators_id(self):
         curators = [curator.id for curator in self.curators]
-        return curators[0] if len(curators) else None
+        return curators if len(curators) else []
 
     def __eq__(self, other):
         return self.id == other.id

@@ -40,12 +40,12 @@ function failed_editing_group(jqXHR, textStatus, errorThrown){
 function send_changed_group(){
     var name = $('#group-name-input').val()
     var is_active = $('#group-status').val()
-    var courses_id_list = $('#group-courses').val().map(parseInt)
+    var courses_id_list = $('#group-courses').val().map(function(val){return parseInt(val)})
 
     var data = new Object()
     data.name = name
     data.is_active = is_active
-    data['courses.id'] = courses_id_list
+    data['courses_id'] = courses_id_list
 
     $.ajax({
         url: group_api_url + editing_group_id,

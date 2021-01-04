@@ -49,7 +49,7 @@ def group_page(group_id):
     lessons_solve_status = dict(count_tasks_solved_for_lessons_by_pupil(pupil_id=pupil_id, group_id=group_id))
     count_tasks_in_lesson = dict(count_tasks_in_each_lesson_available_for_group(group_id=group_id))
 
-    return render_template('lessons_for_group.html', group=group, lessons=group.lessons,
+    return render_template('lessons_for_group.html', group=group,
                            lessons_solve_status=lessons_solve_status, count_tasks_in_lesson=count_tasks_in_lesson)
 
 

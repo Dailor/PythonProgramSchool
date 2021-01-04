@@ -9,11 +9,19 @@ CKEDITOR.editorConfig = function( config ) {
 	// config.uiColor = '#AADC6E';
 	config.mathJaxLib = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML';
 	
+	config.extraPlugins = 'lineutils';
+	config.extraPlugins = 'dialog';
+	config.extraPlugins = 'clipboard';
+
+	config.extraPlugins = 'widget';
+
 	config.extraPlugins = 'dialogui';
 	config.extraPlugins = 'fakeobjects';
-	config.extraPlugins = 'dialog';
+	
 	config.extraPlugins = 'link';
 		
 	config.extraPlugins = 'youtube';
+
+	config.extraPlugins = 'codesnippet';
 	
 };

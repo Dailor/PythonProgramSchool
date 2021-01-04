@@ -4,10 +4,18 @@ from app.models.__all_models import Group, Teacher, Course
 from .parser import parser, parser_admin
 
 from flask import jsonify
-from flask_restful import Resource, abort
+from flask_restful import Resource, abort, request
 from flask_login import current_user
 
 groups_only_admin = ('id', 'name', 'is_active', 'teacher_id', 'courses_id')
+groups_only_teacher = ('id', 'name', 'is_active', 'teacher_id', 'courses.id')
+
+
+def get_groups_fields_to_serialize():
+    if current_user.is_admin:
+        return groups_only_admin
+    elif current_user.is_teacher:
+        return groups_only_teacher
 
 
 class GroupListResource(Resource):
@@ -58,7 +66,7 @@ class GroupListResource(Resource):
         session.add(group)
         session.commit()
 
-        return jsonify(group.to_dict(only=groups_only_admin))
+        return jsonify(group.to_dict(only=get_groups_fields_to_serialize()))
 
 
 class GroupResource(Resource):
@@ -100,7 +108,7 @@ class GroupResource(Resource):
         session.merge(group)
         session.commit()
 
-        return jsonify(group.to_dict(only=groups_only_admin))
+        return jsonify(group.to_dict(only=get_groups_fields_to_serialize()))
 
     def delete(self, group_id):
         session = db_session.create_session()

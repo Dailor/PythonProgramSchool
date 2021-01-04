@@ -36,7 +36,8 @@
 {% endif %}
 <h1 class="font-weight-bold my-3 px-5">Уроки</h1>
 <ul class="d-flex flex-column px-5 w-75">
-    {% for lesson in lessons%}
+    {% set lessons = group.lessons if current_user.is_pupil else group.all_lessons() if current_user.is_teacher else [] %}
+    {% for lesson in lessons %}
     <li class="card shadow mb-4 lesson-card">
         {% if current_user.is_teacher %}
             {% set lesson_url= '/teacher/groups/' + group.id|string + '/lessons/' + lesson.id|string %}
@@ -54,7 +55,7 @@
                     {% set progress_bar_solved_tasks = done_count / done_from_count * 100 %}
                 {% endif %}
                 <div class="row mb-1">
-                    <h4 class="m-0 font-weight-bold col-sm-8">{{lesson.name}}</h4>
+                    <h4 class="m-0 font-weight-bold col-sm-8">{{lesson.course.name}}.{{lesson.name}}</h4>
                     <div class="col-sm-4">
                         <div class="progress">
                             <div class="progress-bar bg-success" role="progressbar" style="width: {{progress_bar_solved_tasks}}%"></div>
