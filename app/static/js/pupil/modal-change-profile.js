@@ -1,4 +1,6 @@
 const api_contest_system_url = "/pupil/api/contest_system";
+const url_change_email = '/pupil/change_email'
+const url_change_password = '/pupil/change_password'
 
 $('#change-profile').on('hide.bs.modal', function (event) {
     $('#form-change-contest-system-id #error, #success').text('')
@@ -50,3 +52,46 @@ function change_id_in_contest_system_form_submit(){
     return false
 }
 
+function change_email(){
+    var parentForm = $('#change-email')
+    var email = parentForm.find('#inputEmail').val()
+    var errorSpan = parentForm.find('#error')
+
+    $.ajax({url: url_change_email,
+            data: {'email': email},
+            type: "POST",
+            success: function(data, textStatus, jqXHR){
+                window.location.replace('/')
+            },
+            error: function(jqXHR, textStatus, errorThrown){
+                errorSpan.text(jqXHR.responseText)
+            }
+            })
+
+    return false
+}
+
+function change_password(){
+    var parentForm = $('#change-password')
+    var password = parentForm.find('#inputPassword').val()
+    var repeatPassword = parentForm.find('#inputRepeatPassword').val()
+    var errorSpan = parentForm.find('#password #error')
+
+    if (password != repeatPassword){
+        parentForm.find('#passwordRepeat #error').text('Пароли не совпадают')
+        return false
+    }
+
+    $.ajax({url: url_change_password,
+            data: {'password': password},
+            type: "POST",
+            success: function(data, textStatus, jqXHR){
+                window.location.replace('/')
+            },
+            error: function(jqXHR, textStatus, errorThrown){
+                errorSpan.text(jqXHR.responseText)
+            }
+            })
+
+    return false
+}

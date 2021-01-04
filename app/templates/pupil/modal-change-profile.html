@@ -1,4 +1,4 @@
-<div class="modal" tabindex="-1" role="dialog" id="change-profile">
+<div class="modal" tabindex="-1" role="dialog" id="modal-change-profile">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -17,15 +17,39 @@
 
                             <span id="success" class="text-success"></span>
                             <span id="error" class="text-danger"></span>
-
-                            <div class="d-flex justify-content-end mt-2">
-                                <input type="submit" class="btn btn-primary" value="Сохранить">
-                            </div>
+                        </div>
+                        <div class="form-group d-flex justify-content-end">
+                            <input type="submit" class="btn btn-primary" value="Сохранить">
                         </div>
                 </form>
                 {% endfor %}
+                <form id="change-email" onsubmit="return change_email()">
+                    <div class="form-group">
+                        <label for="inputEmail">Почта</label>
+                        <input type="email" class="form-control" id="inputEmail" placeholder="Почта" value="{{current_user.email}}" required>
+                        <span id="error" class="text-danger"></span>
+                    </div>
+                    <div class="form-group d-flex justify-content-end">
+                        <input class="btn btn-primary" type="submit" value="Сохранить">
+                    </div>
+                </form>
+                <form id="change-password" onsubmit="return change_password()">
+                    <div class="form-group" id="password">
+                        <label for="inputPassword">Пароль</label>
+                        <input type="password" class="form-control" id="inputPassword" placeholder="Пароль" required>
+                        <span id="error" class="text-danger"></span>
+                    </div>
+                    <div class="form-group" id="passwordRepeat">
+                        <label for="inputRepeatPassword">Повторите пароль</label>
+                        <input type="password" class="form-control" id="inputRepeatPassword" placeholder="Повторите пароль" required>
+                        <span id="error" class="text-danger"></span>
+                    </div>
+                    <div class="form-group d-flex justify-content-end">
+                        <input class="btn btn-primary" type="submit" value="Сохранить">
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
-<script src="{{ url_for('static', filename='js/pupil/modal-contest-system.js', version=STATIC_FILES_VERSION) }}"></script>
+<script src="{{ url_for('static', filename='js/pupil/modal-change-profile.js', version=STATIC_FILES_VERSION) }}"></script>

@@ -1,3 +1,7 @@
+class CheckStringException(Exception):
+    pass
+
+
 class CheckString:
     field = ""
     pattern_empty_field_error = "Поле с {} должно содержать минимум 1 символ"
@@ -6,9 +10,9 @@ class CheckString:
     @classmethod
     def check_string(cls, string):
         if not len(string):
-            raise ValueError(cls.pattern_empty_field_error.format(cls.field))
+            raise CheckStringException(cls.pattern_empty_field_error.format(cls.field))
         if ''.join(string.split(maxsplit=1)) != string:
-            raise ValueError(cls.pattern_space_include_error.format(cls.field))
+            raise CheckStringException(cls.pattern_space_include_error.format(cls.field))
         return string
 
 
@@ -32,7 +36,7 @@ class CheckPassword(CheckString):
     def check_string(cls, string):
         super(CheckPassword, cls).check_string(string)
         if len(string) < 6:
-            raise ValueError(cls.pattern_empty_field_error.format(cls.field))
+            raise CheckStringException(cls.pattern_empty_field_error.format(cls.field))
         return string
 
 

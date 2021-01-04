@@ -8,10 +8,12 @@ from app.api.task.task_resource import SolutionsListResource
 from app.api.solution_on_task.solution_on_task_resource import SolutionOnTask
 from app.api.contest_system.contest_system_resourse import ContestSystemPupilResource, ContestSystemPupilListResource
 
-from flask import render_template, abort, redirect
+from app.api.utils.parser.checkers import CheckPassword, CheckEmail, CheckStringException
+
+from flask import render_template, redirect, request
 from flask.blueprints import Blueprint
 from flask_login import current_user
-from flask_restful import Api
+from flask_restful import Api, abort
 
 blueprint = Blueprint('pupil', __name__, template_folder="templates", static_folder="static")
 api = Api(blueprint, prefix='/api')
@@ -24,6 +26,7 @@ def register_resources():
     api.add_resource(ContestSystemPupilListResource, '/contest_system/pupil/<int:pupil_id>')
     api.add_resource(ContestSystemPupilResource,
                      '/contest_system/pupil/<int:pupil_id>/contest_system_id/<int:contest_system_id>')
+
 
 def check_group_permission(group):
     pupil = current_user.pupil
@@ -90,6 +93,42 @@ def solve_task_page(group_id, lesson_id, task_id):
 
     return render_template('solution_page.html', task=task, group_id=group_id, pupil_id=pupil_id,
                            lesson_available=lesson_available)
+
+
+@blueprint.route('/change_password', methods=['POST'])
+def change_password():
+    password = request.values['password']
+
+    try:
+        CheckPassword.check_string(password)
+    except CheckStringException as e:
+        return str(e), 400
+
+    current_user.set_password(password)
+
+    session = db_session.create_session()
+    session.merge(current_user)
+    session.commit()
+
+    return '', 200
+
+
+@blueprint.route('/change_email', methods=['POST'])
+def change_email():
+    email = request.values['email']
+
+    try:
+        CheckEmail.check_string(email)
+    except Exception as e:
+        return abort(400, message=str(e))
+
+    current_user.email = email
+
+    session = db_session.create_session()
+    session.merge(current_user)
+    session.commit()
+
+    return '', 200
 
 
 register_resources()
