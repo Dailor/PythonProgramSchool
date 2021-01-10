@@ -24,8 +24,6 @@ mail = None
 def init_db():
     db_session.global_init(debug=app.config["DEBUG"])
 
-    from app import default_data_in_database
-
 
 def init_additions():
     global api, recaptcha, login_manager, mail
@@ -55,6 +53,8 @@ def load_app():
     app.add_template_global(name='STATIC_FILES_VERSION', f=app.config['STATIC_FILES_VERSION'])
 
     init_db()
+    from app import default_data_in_database
+
     init_additions()
     blueprint_routes_register()
     api_register()

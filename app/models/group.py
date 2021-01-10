@@ -22,27 +22,25 @@ class Group(SqlAlchemyBase, SerializerMixin, DbHelper):
     __tablename__ = "groups"
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    name = sqlalchemy.Column(sqlalchemy.String(20), unique=True, nullable=False)
+    name = sqlalchemy.Column(sqlalchemy.String(255), unique=True, nullable=False)
     is_active = sqlalchemy.Column(sqlalchemy.Boolean, default=True)
     invite_code = sqlalchemy.Column(sqlalchemy.String(255), unique=True, nullable=False)
 
-    teacher_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("teachers.id"))
+    teacher_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("teachers.id", ondelete="SET NULL"))
 
-    teacher = orm.relationship("Teacher", uselist=False, back_populates="groups")
-    pupils = orm.relationship("Pupil", secondary='pupils_to_groups', back_populates="groups", lazy='joined')
+    teacher = orm.relationship("Teacher", back_populates="groups", lazy='joined')
+    pupils = orm.relationship("Pupil", secondary='pupils_to_groups', back_populates="groups", lazy='select')
 
-    courses = orm.relationship("Course", secondary='course_to_group', back_populates='groups',
+    courses = orm.relationship("Course", secondary='course_to_group', back_populates='groups', lazy='select',
                                order_by="Course.id")
-    lessons = orm.relationship("Lesson", secondary='lesson_to_group', back_populates='groups',
+    lessons = orm.relationship("Lesson", secondary='lesson_to_group', back_populates='groups', lazy='select',
                                order_by="Lesson.course_id, Lesson.id.desc()")
-    solutions = orm.relationship("Solution", back_populates='group', lazy='joined',
+    solutions = orm.relationship("Solution", back_populates='group', lazy='select',
                                  cascade="all, delete",
                                  passive_deletes=True)
 
-    lessons_available = orm.relationship("LessonAvailableToGroup")
-
     def get_lesson_available_by_lesson(self, lesson):
-        for lesson_available in self.lessons_available:
+        for lesson_available in self.lessons:
             if lesson_available.lesson_id == lesson.id:
                 return lesson_available
 

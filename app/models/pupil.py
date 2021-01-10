@@ -12,11 +12,11 @@ class Pupil(SqlAlchemyBase, SerializerMixin, DbHelper):
 
     user_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id", ondelete='CASCADE'), unique=True)
 
-    user = orm.relationship("User", back_populates="pupil")
+    user = orm.relationship("User", back_populates="pupil", lazy='joined')
     groups = orm.relationship("Group", secondary='pupils_to_groups', back_populates="pupils", lazy='joined')
-    solutions = orm.relationship("Solution", back_populates='pupil', cascade="all, delete",
+    solutions = orm.relationship("Solution", back_populates='pupil', cascade="all, delete", lazy='select',
                                  passive_deletes=True)
-    contest_systems = orm.relationship('ContestSystemToPupil', cascade='all, delete',
+    contest_systems = orm.relationship('ContestSystemToPupil', cascade='all, delete', lazy='joined',
                                        passive_deletes=True)
 
     @property

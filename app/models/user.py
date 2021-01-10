@@ -200,9 +200,9 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin, DbHelper):
         return self.id == other.id
 
 
-class Admin(SqlAlchemyBase):
+class Admin(SqlAlchemyBase, DbHelper):
     __tablename__ = 'admins'
 
     user_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id", ondelete='CASCADE'),
                                 primary_key=True)
-    user = orm.relationship("User", back_populates='admin')
+    user = orm.relationship("User", back_populates='admin', lazy='joined')

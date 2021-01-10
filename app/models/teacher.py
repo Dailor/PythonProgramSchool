@@ -12,9 +12,9 @@ class Teacher(SqlAlchemyBase, SerializerMixin):
     user_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id', ondelete='CASCADE'), unique=True,
                                 nullable=False)
 
-    user = orm.relationship("User", back_populates="teacher")
+    user = orm.relationship("User", back_populates="teacher", lazy='joined')
     groups = orm.relationship("Group", back_populates="teacher", lazy='joined')
-    courses = orm.relationship("Course", secondary='course_to_teacher', back_populates='curators', lazy='joined')
+    courses = orm.relationship("Course", secondary='course_to_teacher', back_populates='curators', lazy='select')
 
     def get_string_groups(self):
         return [gr.name for gr in self.groups]

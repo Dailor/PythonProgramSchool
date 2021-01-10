@@ -14,9 +14,12 @@ class Lesson(SqlAlchemyBase, SerializerMixin, DbHelper):
 
     course_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("courses.id", ondelete='CASCADE'))
 
-    course = orm.relationship("Course", back_populates="lessons")
-    tasks = orm.relationship("Task", back_populates='lesson', cascade='all, delete-orphan', single_parent=True)
-    groups = orm.relationship('Group', secondary='lesson_to_group', back_populates='lessons')
+    course = orm.relationship("Course", back_populates="lessons",
+                              lazy='select')
+    tasks = orm.relationship("Task", back_populates='lesson', cascade='all, delete-orphan', single_parent=True,
+                             lazy='select')
+    groups = orm.relationship('Group', secondary='lesson_to_group', back_populates='lessons',
+                              lazy='select')
 
     def __eq__(self, other):
         return self.id == other.id

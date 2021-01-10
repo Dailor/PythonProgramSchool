@@ -33,14 +33,6 @@ columns = [{id: 'id',
             type: 'text',
             },
 
-
-            { id: 'subjects',
-              data: 'subjects',
-              title: 'Предметы',
-              render: function(data, type, row){
-                        return data.split("\n").join("<br/>");},
-            },
-
             { id: 'groups',
               data: 'groups',
               title: 'Группы',

@@ -1,13 +1,6 @@
-url_api_user = '/admin/api/user';
-url_set_role = url_api_user + '/role';
+const url_api_user = '/admin/api/admin';
 
-admin_role = 'Админ';
-teacher_role = 'Учитель';
-pupil_role = 'Ученик';
-
-role_in_this_table = admin_role;
-
-dataSrc = 'users';
+const dataSrc = 'admins';
 
 
 var dataTable_admins;
@@ -134,7 +127,6 @@ $(document).ready(function() {
         columns: columns,
         ajax: {
             url: url_api_user,
-            data: {'role':  role_in_this_table},
             dataSrc: dataSrc
         },
         language: language,
@@ -144,12 +136,9 @@ $(document).ready(function() {
 
 
         onDeleteRow: function(datatable, rowdata, success, error) {
-            var data = {'id': rowdata.id,
-                    'role': role_in_this_table};
             $.ajax({
-                url: url_set_role,
+                url: url_api_user + '/' + rowdata.id,
                 type: 'DELETE',
-                data: data,
                 success: success,
                 error: function(jqXHR, textStatus, errorThrown){
                     error_ajax_crud(error, jqXHR, textStatus, errorThrown);

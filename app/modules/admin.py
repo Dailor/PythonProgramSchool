@@ -2,9 +2,10 @@ from app.models import db_session
 from app.models.__all_models import UserRoles, Course, Teacher, Group
 
 from app.api.user.user_resource import UserListResource, UserResource
-from app.api.group.group_resource import GroupListResource, GroupResource
 from app.api.teacher.teacher_resource import TeacherListResource, TeacherResource
 from app.api.pupils.pupil_resource import PupilListResource, PupilResource
+from app.api.admin.admin_resourse import AdminListResource, AdminResource
+from app.api.group.group_resource import GroupListResource, GroupResource
 from app.api.course.course_resource import CourseListResource, CourseResource
 
 from flask import blueprints as bl_module
@@ -27,14 +28,14 @@ def register_resources():
     api.add_resource(PupilResource, '/pupil/<int:pupil_id>')
     api.add_resource(PupilListResource, '/pupil')
 
+    api.add_resource(AdminResource, '/admin/<int:user_id>')
+    api.add_resource(AdminListResource, '/admin')
+
     api.add_resource(GroupResource, '/group/<int:group_id>')
     api.add_resource(GroupListResource, '/group')
 
     api.add_resource(CourseListResource, '/course')
     api.add_resource(CourseResource, '/course/<int:course_id>')
-
-
-
 
 
 @blueprint.before_request
