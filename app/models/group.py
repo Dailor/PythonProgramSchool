@@ -41,7 +41,7 @@ class Group(SqlAlchemyBase, SerializerMixin, DbHelper):
 
     def get_lesson_available_by_lesson(self, lesson):
         for lesson_available in self.lessons:
-            if lesson_available.lesson_id == lesson.id:
+            if lesson_available.id == lesson.id:
                 return lesson_available
 
     def courses_id(self):
