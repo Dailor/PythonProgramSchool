@@ -1,7 +1,6 @@
-import datetime
-
 class PaginationConfig:
     MAX_COUNT = 10
+
 
 class DataBaseConfig:
     host = "82.146.39.71"
