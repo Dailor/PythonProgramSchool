@@ -107,7 +107,8 @@ class CourseResource(Resource):
 
         course = Course.get_entity_or_404(course_id)
 
-        if current_user.is_admin is False and current_user.teacher.id != course.teacher.id:
+        if current_user.is_admin is False and not any(
+                current_user.teacher.id == curator.id for curator in course.curators):
             return abort(403, error='Вы не можете удилать данный курс')
 
         session.delete(course)
