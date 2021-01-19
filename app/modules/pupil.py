@@ -64,7 +64,7 @@ def lesson_page(group_id, lesson_id):
     check_group_permission(group)
 
     lesson = session.query(Lesson).get(lesson_id)
-    lesson_available = group.get_lesson_available_by_lesson(lesson)
+    lesson_available = group.get_lesson_available_by_lesson(lesson, group)
     if lesson not in group.lessons:
         abort(403)
 
@@ -87,7 +87,7 @@ def solve_task_page(group_id, lesson_id, task_id):
     pupil_id = current_user.pupil.id
 
     check_group_permission(group)
-    lesson_available = group.get_lesson_available_by_lesson(lesson)
+    lesson_available = group.get_lesson_available_by_lesson(lesson, group)
 
     task_to_dict_only = ('id', 'name', 'time_sec', 'memory_mb', 'tries_count', 'examples')
 

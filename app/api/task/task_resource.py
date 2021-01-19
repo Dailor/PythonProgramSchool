@@ -81,7 +81,7 @@ class SolutionsListResource(Resource):
         task = Task.get_entity_or_404(task_id)
         pupil = current_user.pupil
 
-        lesson_available = group.get_lesson_available_by_lesson(task.lesson)
+        lesson_available = group.get_lesson_available_by_lesson(task.lesson, group)
 
         if lesson_available.deadline and lesson_available.deadline < datetime.utcnow():
             return abort(400, error='Сдача после дедлайна')
@@ -97,7 +97,7 @@ class SolutionsListResource(Resource):
         tries_left = task.tries_count - len(solutions_passed)
 
         if tries_left <= 0:
-            abort(403, error='У вас закончились попытки')
+            return abort(403, error='У вас закончились попытки')
 
         solution = Solution()
         solution.task_id = task_id

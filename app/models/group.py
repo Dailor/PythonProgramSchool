@@ -39,10 +39,12 @@ class Group(SqlAlchemyBase, SerializerMixin, DbHelper):
                                  cascade="all, delete",
                                  passive_deletes=True)
 
-    def get_lesson_available_by_lesson(self, lesson):
-        for lesson_available in self.lessons:
-            if lesson_available.id == lesson.id:
-                return lesson_available
+    def get_lesson_available_by_lesson(self, lesson, group):
+        from .lesson import LessonAvailableToGroup
+
+        session = create_session()
+        return session.query(LessonAvailableToGroup).filter(LessonAvailableToGroup.lesson_id == lesson.id,
+                                                            LessonAvailableToGroup.group_id == group.id).first()
 
     def courses_id(self):
         return [course.id for course in self.courses]

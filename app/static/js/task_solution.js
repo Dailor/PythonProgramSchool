@@ -189,7 +189,6 @@ function setCheckerOnTimer(solution_id){
             }
 
             if(data.review_status == null){
-                    debugger;
                     setTimeout(setCheckerOnTimer, time_check_task, solution_id)
             }
         },

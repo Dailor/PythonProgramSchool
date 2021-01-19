@@ -215,6 +215,10 @@ $().ready(function(){
         return;
     }
 
+    if(lesson.tasks.length){
+        $('#programming-language').val(lesson.tasks[0].language_id);
+    }
+
     CKEDITOR.instances['lessonMaterial'].setData(lesson.html, {callback: function() {
                                                                                         this.checkDirty(); // true
                                                                                     }}

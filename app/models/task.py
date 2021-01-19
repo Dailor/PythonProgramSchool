@@ -12,7 +12,6 @@ import datetime
 class ProgrammingLanguage:
     PYTHON = ('Python', 71)
     CPP = ('C++', 54)
-    CPP = ('C++', 54)
 
     ALL = [PYTHON, CPP]
 

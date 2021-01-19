@@ -134,7 +134,7 @@ def lesson_page(group_id, lesson_id):
     group = Group.get_entity_or_404(group_id)
     lesson = Lesson.get_entity_or_404(lesson_id)
 
-    lesson_available = group.get_lesson_available_by_lesson(lesson)
+    lesson_available = group.get_lesson_available_by_lesson(lesson, group)
 
     lesson_to_dict_only = (
         'id', 'name', 'tasks.id', 'tasks.name', 'html', 'tasks.description', 'tasks.time_sec', 'tasks.memory_mb',
@@ -151,7 +151,7 @@ def solution_page(group_id, lesson_id, task_id, pupil_id):
     group = Group.get_entity_or_404(group_id)
     lesson = Lesson.get_entity_or_404(lesson_id)
 
-    lesson_available = group.get_lesson_available_by_lesson(lesson)
+    lesson_available = group.get_lesson_available_by_lesson(lesson, group)
     return render_template('solution_page.html', task=task, group_id=group_id,
                            pupil_id=pupil_id, pupil_full_name=pupil.user.full_name, lesson_available=lesson_available)
 
