@@ -63,12 +63,25 @@ class SubmissionsBatch(SqlAlchemyBase):
         errors = set()
 
         for submission in self.submissions:
-            max_memory = max(max_memory, submission.memory)
-            max_time = max(max_time, submission.time)
+            if max_memory:
+                max_memory = max(max_memory, submission.memory)
+            else:
+                max_memory = submission.memory
+
+            if max_time:
+                max_time = max(max_time, submission.time)
+            else:
+                max_time = submission.time
+
             status_id, status_text = submission.status['id'], submission.status['description']
 
             if status_id > 3:
                 errors.add(status_text)
+
+        if not max_memory:
+            max_memory = 0
+        if not max_time:
+            max_time = 0
 
         return {SubmissionsBatchStatistic.MAX_TIME_SEC: max_time,
                 SubmissionsBatchStatistic.MAX_MEMORY_MB: max_memory / 1000,

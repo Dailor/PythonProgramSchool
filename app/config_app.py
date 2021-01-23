@@ -45,7 +45,8 @@ class DefaultAdminConfig:
 
 
 class CheckerConfig:
-    DOMAIN = "https://ramazan.school"
+    # DOMAIN = "https://ramazan.school"
+    DOMAIN = "http://09bbcae4ed8a.ngrok.io"
 
     CHECKER_HOST = 'http://178.159.39.154'
     BATCH_SUBS_URL = CHECKER_HOST + '/submissions/batch'
