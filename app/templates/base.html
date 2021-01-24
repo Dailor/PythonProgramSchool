@@ -27,6 +27,9 @@
 
     <!-- Core plugin JavaScript-->
     <script src="{{ url_for('static', filename='vendor/jquery-easing/jquery.easing.min.js', version=STATIC_FILES_VERSION) }}"></script>
+    <!-- Moment.js-->
+    {{ moment.include_moment() }}
+    {{ moment.lang('ru') }}
 
     <!-- Custom-->
     <script src="{{ url_for('static', filename='js/sb-admin-2.min.js', version=STATIC_FILES_VERSION) }}"></script>

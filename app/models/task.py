@@ -1,3 +1,5 @@
+from app.utils.time import get_utc_date_in_iso
+
 from .db_session import SqlAlchemyBase
 from .db_helper import DbHelper
 
@@ -100,3 +102,6 @@ class Solution(SqlAlchemyBase, SerializerMixin, DbHelper):
 
     def __eq__(self, other):
         return self.id == other.id
+
+    def date_delivery_iso(self):
+        return get_utc_date_in_iso(self.date_delivery)

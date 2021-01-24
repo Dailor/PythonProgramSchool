@@ -56,3 +56,11 @@ def id_list(data):
         result.append(i)
 
     return result
+
+
+def is_more_zero(data):
+    data = int(float(data))
+
+    if data < 0:
+        raise ValueError("Less Zero")
+    return data

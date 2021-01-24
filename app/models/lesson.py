@@ -1,8 +1,11 @@
 from .db_session import SqlAlchemyBase
 from .db_helper import DbHelper
+
+from datetime import timedelta
+import sqlalchemy
+
 from sqlalchemy import orm
 from sqlalchemy_serializer import SerializerMixin
-import sqlalchemy
 
 
 class Lesson(SqlAlchemyBase, SerializerMixin, DbHelper):
@@ -35,4 +38,10 @@ class LessonAvailableToGroup(SqlAlchemyBase):
                                  sqlalchemy.ForeignKey("groups.id", ondelete='CASCADE'),
                                  primary_key=True)
 
-    deadline = sqlalchemy.Column(sqlalchemy.DateTime)
+    available_from = sqlalchemy.Column(sqlalchemy.DateTime)
+    seconds_to_deadline = sqlalchemy.Column(sqlalchemy.Integer)
+
+    @property
+    def deadline(self):
+        if self.available_from and self.seconds_to_deadline:
+            return self.available_from + timedelta(seconds=self.seconds_to_deadline)

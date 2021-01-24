@@ -189,11 +189,7 @@ class LessonAvailableListResource(Resource):
 
         group_id = args['group_id']
         lesson_id = args['lesson_id']
-        deadline = args['deadline']
-
-        deadline_datetime = datetime.fromtimestamp(deadline)
-        if deadline_datetime < datetime.utcnow():
-            return abort(400, error='Дата должна быть позже чем сейчас')
+        seconds_to_deadline = args['seconds_to_deadline']
 
         session = db_session.create_session()
 
@@ -206,7 +202,8 @@ class LessonAvailableListResource(Resource):
         lesson_available_contest = LessonAvailableToGroup()
         lesson_available_contest.group_id = group_id
         lesson_available_contest.lesson_id = lesson_id
-        lesson_available_contest.deadline = deadline_datetime
+        lesson_available_contest.available_from = datetime.utcnow()
+        lesson_available_contest.seconds_to_deadline = seconds_to_deadline
 
         session.add(lesson_available_contest)
         session.commit()

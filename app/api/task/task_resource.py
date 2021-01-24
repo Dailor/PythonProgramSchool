@@ -4,7 +4,7 @@ from app.models.__all_models import Task, Solution, TaskCheckStatusString, TaskC
     SubmissionsBatch, Pupil
 from ...models import db_session
 
-from .parser import parser,  parser_solutions_list_for_task, parser_solution_status_change
+from .parser import parser, parser_solutions_list_for_task, parser_solution_status_change
 
 import requests
 from datetime import datetime
@@ -180,10 +180,10 @@ class PupilSolutionsListForTask(Resource):
                                                    Solution.task_id == task_id).order_by(Solution.id).all()
         tries_left = task.tries_count - len(solutions)
         return jsonify(
-            {"solutions": [solution.to_dict(only=('id', 'date_delivery', 'review_status', 'solution_info', 'result'))
-                           for solution
-                           in solutions],
-             "tries_left": tries_left})
+            {"solutions": [solution.to_dict(
+                only=('id', 'date_delivery', 'date_delivery_iso', 'review_status', 'solution_info', 'result'))
+                for solution in solutions],
+                "tries_left": tries_left})
 
 
 class PupilSolutionForTask(Resource):
@@ -192,7 +192,8 @@ class PupilSolutionForTask(Resource):
 
         solution = Solution.get_entity_or_404(solution_id)
 
-        return jsonify(solution.to_dict(only=('id', 'result', 'date_delivery', 'review_status', 'solution_info')))
+        return jsonify(solution.to_dict(
+            only=('id', 'date_delivery', 'date_delivery_iso', 'review_status', 'solution_info', 'result')))
 
     def post(self):
         args = parser_solution_status_change.parse_args()

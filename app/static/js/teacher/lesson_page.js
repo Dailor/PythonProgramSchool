@@ -1,7 +1,7 @@
 var url_api_lesson_available = '/teacher/api/lesson_available';
 var url_api_solutions = '/teacher/api/solutions/';
-var async_http_already = false;
 var selected_task = null;
+var already_changing_lesson_status = false;
 
 var selector_pupils_blocks = ['waiting-check-pupils', 'success-passed-pupils', 'failed-pupils', 'not-passed-pupils']
 var solution_results_keys = ['waiting', 'solved','failed', 'not pass']
@@ -98,51 +98,30 @@ function task_results(task_index_in_lesson){
     }
 }
 
-function success_set_lesson_available(data, textStatus, jqXHR, lesson_id, set_status){
-    var div_lesson_available_switcher = $('#lesson_available_switcher');
-
-    if(!set_status){
-        div_lesson_available_switcher.html('<h5 class="my-3"><span class="fas fa-eye"></span> Показать урок</h5>');
-    }else{
-        div_lesson_available_switcher.html('<h5 class="my-3"><span class="fas fa-eye-slash"></span> Скрыть урок</h5>');
+function set_lesson_available(lesson_id, set_status){
+    if (already_changing_lesson_status){
+        return
     }
 
-    div_lesson_available_switcher.attr('onclick', `set_lesson_available(${lesson_id}, ${!set_status})`);
-};
-
-function error_set_lesson_available(jqXHR, textStatus, errorThrown){
-    location.reload();
-};
-
-function set_lesson_available(lesson_id, set_status){
     var http_request_type;
 
     if(set_status){
-        http_request_type = "PUT";
+        http_request_type = "PUT"
     }else{
-        http_request_type = 'DELETE';
+        http_request_type = 'DELETE'
     }
 
     var data = {'lesson_id': lesson_id,
                 'group_id': group_id}
 
-    if (async_http_already){
-        return
-    }
-
-    async_http_already = true;
+    already_changing_lesson_status = true
 
     $.ajax({
         url: url_api_lesson_available,
         data: data,
         type: http_request_type,
-        success: function(data, textStatus, jqXHR){
-                    //success_set_lesson_available(data, textStatus, jqXHR, lesson_id, set_status);
-                    //is_lesson_available = !is_lesson_available;
-                },
-        error: error_set_lesson_available,
         complete: function(jqXHR, textStatus){
-                   async_http_already = false;
+                       location.reload()
                   }
     })
 }
@@ -150,16 +129,17 @@ function set_lesson_available(lesson_id, set_status){
 function start_contest(){
     var date_string = $('#datetime-input').val();
     if(!date_string.length){
-        $('#datetime-error').text('Это поле объязательно');
+        $('#datetime-error').text('Это поле объязательно')
         return;
     }
 
-    var date = new Date(date_string);
-    var date_utc_timestamp = date.getTime() / 1000 - 3600 * 6;
+    var dateNow = new Date();
+
+    var dateDeadline = new Date(date_string);
 
     var data = {'lesson_id': lesson.id,
                 'group_id': group_id,
-                'deadline': date_utc_timestamp};
+                'seconds_to_deadline': (dateDeadline - dateNow) / 1000 }
     $.ajax({
         url: url_api_lesson_available,
         data: data,
@@ -168,8 +148,7 @@ function start_contest(){
                             location.reload();
                             },
         error: function(jqXHR, textStatus, errorThrown){
-                            debugger;
-                            $('#datetime-error').text(jqXHR.responseJSON.error);
+                            $('#datetime-error').text(jqXHR.responseJSON.message.seconds_to_deadline);
                         }
     });
 }

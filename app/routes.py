@@ -8,7 +8,7 @@ from app.forms.login import LoginForm, LoginAnswers
 from app.forms.registration import RegistrationForm
 from app.forms.password_reset import ResetPasswordRequestForm, ResetPasswordForm
 
-from app.utils import send_password_reset_email
+from app.utils.email import send_password_reset_email
 
 from flask import render_template, redirect, abort, flash, url_for
 from flask_login import login_user, logout_user, current_user, login_required

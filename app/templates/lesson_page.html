@@ -18,12 +18,13 @@
 var lesson = {{lesson|tojson}};
 const group_id = {{group_id|tojson}};
 
-{% if lesson_available %}
-    {% set lesson_deadline = (lesson_available.deadline.timestamp() + 3600 * 6) * 1000 if lesson_available.deadline else None %}
-    var deadline = {{lesson_deadline|tojson}};
+{% if lesson_available and lesson_available.deadline %}
+    {% set lesson_deadline = lesson_available.deadline %}
+    var deadline = new Date({{get_utc_date_in_iso(lesson_deadline)|tojson}}).valueOf();
 {% else %}
     var deadline = null;
 {% endif %}
+
 
 
 </script>
@@ -42,16 +43,18 @@ const group_id = {{group_id|tojson}};
     <h2 class="font-weight-bold mb-3">{{lesson.name}}</h2>
     {% if current_user.is_teacher and not lesson_test_view%}
     <div class="row">
-        <div class="lesson_available_switcher col-sm-2" id="lesson_available_switcher"
-             onclick="set_lesson_available({{lesson.id}}, {{(not lesson_available)|lower}})">
-            {% if not lesson_available %}
-            <h5 class="my-3"><span class="fas fa-eye"></span> Показать урок</h5>
-            {% else %}
-            <h5 class="my-3"><span class="fas fa-eye-slash"></span> Скрыть урок</h5>
-            {% endif %}
+        <div class="col-sm-2">
+            <div class="lesson_available_switcher" id="lesson_available_switcher"
+                 onclick="set_lesson_available({{lesson.id}}, {{(not lesson_available)|lower}})">
+                {% if not lesson_available %}
+                <h5 class="my-3"><span class="fas fa-eye"></span> Показать урок</h5>
+                {% else %}
+                <h5 class="my-3"><span class="fas fa-eye-slash"></span> Скрыть урок</h5>
+                {% endif %}
+            </div>
         </div>
         {% if not lesson_available %}
-        <div class="col-2" id="modal-contest">
+        <div class="col-sm-3" id="modal-contest">
             <button class="btn btn-primary" data-toggle="modal" data-target="#contestModal">Начать контест</button>
         </div>
         {% endif %}
