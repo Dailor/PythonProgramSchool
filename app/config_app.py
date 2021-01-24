@@ -33,7 +33,7 @@ class SecretData:
 
 
 class StaticConfig:
-    STATIC_FILES_VERSION = 10
+    STATIC_FILES_VERSION = 11
 
 
 class DefaultAdminConfig:
