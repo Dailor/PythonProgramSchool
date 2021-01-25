@@ -17,6 +17,12 @@ class ProgrammingLanguage:
 
     ALL = [PYTHON, CPP]
 
+    MIME_TYPE = {54: "text/x-c++src",
+                 71: "text/x-python"}
+
+    CDN = {54: 'clike/clike.min.js',
+           71: 'python/python.min.js'}
+
 
 class TaskCheckStatus:
     ACCESS = True
@@ -76,6 +82,14 @@ class Task(SqlAlchemyBase, SerializerMixin, DbHelper):
 
     def __eq__(self, other):
         return self.id == other.id
+
+    @property
+    def language_mime_type(self):
+        return ProgrammingLanguage.MIME_TYPE[self.language_id]
+
+    @property
+    def language_cdn_src(self):
+        return ProgrammingLanguage.CDN[self.language_id]
 
 
 class Solution(SqlAlchemyBase, SerializerMixin, DbHelper):

@@ -20,6 +20,9 @@ var solution_info_modal = $('#solutionInfo');
 var editor = CodeMirror(document.getElementById("codeMirror"),
                        {lineNumbers: true,
                         theme: "neat",
+                        matchBrackets: true,
+                        autoCloseBrackets: true,
+                        mode: language_mime_type,
                         });
 
 function scrollToBottomSolutionsHistory(){
@@ -28,11 +31,11 @@ function scrollToBottomSolutionsHistory(){
 }
 
 function add_solution(solution){
-    solutions_count++;
+    solutions_count++
     var row = `
     <tr class="cursor-pointer" id='${solution_identify}${solution.id}' solution-id='${solution.id}' onclick=load_solution(${solution.id})>
         <th scope="row" id="solution-attempt-count">${solutions_count}</th>
-        <td id="solution-date">${moment(new Date(solution.date_delivery)).format('LLLL')}</td>
+        <td id="solution-date">${moment(new Date(solution.date_delivery_iso)).local().format('LLLL')}</td>
         <td id="solution-status">${status_span(solution.review_status)}</td>
     </tr>
     `;

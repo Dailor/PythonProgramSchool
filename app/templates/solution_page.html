@@ -26,19 +26,22 @@
 #}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.2/codemirror.min.js" integrity="sha512-UZAFKlbB343VyEfCComsVIxp836iYUvHyAuRYFoVN4LTNB6mpM+8EgKW8ymIV2qLZQsIiNdbpmJuA8y6IKzOow==" crossorigin="anonymous"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.2/mode/python/python.min.js" integrity="sha512-wWnd0mjQTkxcs4nTZyu9TqfeDbXghPYwndBrvzjmyAgNKX4rJ5xPirrescJZkVtrWHIb9//dMABkORz6FSJfYA==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.2/mode/{{task.language_cdn_src}}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.2/addon/edit/matchbrackets.min.js" integrity="sha512-rjbQerijlYZoHtP8XJGb7xkwnSRUHiydD8NE9fpe01feRM5RDZSZ9Tia+a9hV2cFHMilO4hZaeeTc9ESiik9wQ==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.2/addon/edit/closebrackets.min.js" integrity="sha512-+xi2SgGCBFIGog8JZv+X1dte+mhaJ6i73ZV2icqQk+onxz+ZkrSgtXdNfvqX2YYzwMsGAqpcjyIxvC9ytAXXPw==" crossorigin="anonymous"></script>
 <script src="{{ url_for('static', filename='js/utils/timer.js', version=STATIC_FILES_VERSION) }}"></script>
 <!--<script src="{{url_for('static', filename='vendor/codemirror/mode/clike/clike.js')}}"></script>-->
 
 <script>
-const pupil_id = {{pupil_id}};
-const task_id = {{task.id}};
-const group_id = {{group_id}};
-const is_teacher = {{ ('true' if current_user.is_teacher else 'false')|safe}};
-const is_pupil = {{ ('true' if current_user.is_pupil else 'false')|safe}};
+const language_mime_type = {{ task.language_mime_type|tojson }}
+const pupil_id = {{pupil_id}}
+const task_id = {{task.id}}
+const group_id = {{group_id}}
+const is_teacher = {{ ('true' if current_user.is_teacher else 'false')|safe}}
+const is_pupil = {{ ('true' if current_user.is_pupil else 'false')|safe}}
 
 {% set lesson_deadline = (lesson_available.deadline.timestamp() + 3600 * 6) * 1000 if lesson_available.deadline else None %}
-var deadline = {{lesson_deadline|tojson}};
+var deadline = {{lesson_deadline|tojson}}
 
 
 </script>
