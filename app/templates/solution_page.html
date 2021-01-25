@@ -2,8 +2,14 @@
 {% block title %}{{task.name}}{% endblock %}
 
 {% block style %}
+
+{#
 <link rel="stylesheet" href="{{url_for('static', filename='vendor/codemirror/lib/codemirror.css', version=STATIC_FILES_VERSION)}}">
 <link rel="stylesheet" href="{{url_for('static', filename='vendor/codemirror/theme/neat.css', version=STATIC_FILES_VERSION)}}">
+#}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.2/codemirror.min.css" integrity="sha512-MWdvo/Qqcf4pY1ecQUB1uBn0qLp19U/qJ1Rpp2BDZeuBA7YsFEwkvqR/+aG4BroPiAYDunKJ6X8R/Pmdt3p7oA==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.2/theme/neat.min.css" integrity="sha512-yySSMHK1wb+xdn5GRRSXY6KQMMMyBS4jGB5bKms2Gu2U9mGQnk4zUavraMI/Cc0h19kYNPlQYkqK6pVXM4O56Q==" crossorigin="anonymous" />
 
 <link href="{{url_for('static', filename='css/lessons_available.css', version=STATIC_FILES_VERSION)}}" rel="stylesheet">
 <link href="{{url_for('static', filename='css/lesson_page.css', version=STATIC_FILES_VERSION)}}" rel="stylesheet">
@@ -14,8 +20,13 @@
 <script type="text/javascript" async
         src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML"></script>
 
+{#
 <script src="{{url_for('static', filename='vendor/codemirror/lib/codemirror.js', version=STATIC_FILES_VERSION)}}"></script>
 <script src="{{url_for('static', filename='vendor/codemirror/mode/python/python.js', version=STATIC_FILES_VERSION)}}"></script>
+#}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.2/codemirror.min.js" integrity="sha512-UZAFKlbB343VyEfCComsVIxp836iYUvHyAuRYFoVN4LTNB6mpM+8EgKW8ymIV2qLZQsIiNdbpmJuA8y6IKzOow==" crossorigin="anonymous"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.59.2/mode/python/python.min.js" integrity="sha512-wWnd0mjQTkxcs4nTZyu9TqfeDbXghPYwndBrvzjmyAgNKX4rJ5xPirrescJZkVtrWHIb9//dMABkORz6FSJfYA==" crossorigin="anonymous"></script>
 <script src="{{ url_for('static', filename='js/utils/timer.js', version=STATIC_FILES_VERSION) }}"></script>
 <!--<script src="{{url_for('static', filename='vendor/codemirror/mode/clike/clike.js')}}"></script>-->
 

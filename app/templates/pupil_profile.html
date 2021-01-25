@@ -7,7 +7,11 @@
 
 {% block javascript %}
 
+<!--Chart.js-->
+{#
 <script src="{{url_for('static', filename='/vendor/chart.js/Chart.min.js', version=STATIC_FILES_VERSION)}}"></script>
+#}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
 
 <script>
     statistic_for_group = {{ statistic_for_group|tojson }}
