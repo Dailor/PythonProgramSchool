@@ -3,9 +3,17 @@
 
 {% block style %}
 
+<link rel="stylesheet" href="//cdn.jsdelivr.net/cal-heatmap/3.3.10/cal-heatmap.css" />
+
 {% endblock %}
 
 {% block javascript %}
+
+<!--D3.js-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+
+<!--Cal-heatmap-->
+<script type="text/javascript" src="//cdn.jsdelivr.net/cal-heatmap/3.3.10/cal-heatmap.min.js"></script>
 
 <!--Chart.js-->
 {#
@@ -44,7 +52,7 @@
 <div class="statistic mt-4">
     {% for group_id in statistic_for_group %}
         <h3>{{ statistic_for_group[group_id]['group_name'] }}</h3>
-        {% set statistic_for_courses  = statistic_for_group[group_id]['courses'] %}
+        {% set statistic_for_courses = statistic_for_group[group_id]['courses'] %}
         <div class="row mt-3">
         {% for course_id in statistic_for_courses %}
             <div class="col-xl-3 col-lg-5">

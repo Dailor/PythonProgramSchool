@@ -2,7 +2,7 @@ from sqlalchemy import func, distinct, and_, literal
 
 from app.models import db_session
 from app.models.group import Group
-from app.models.lesson import Lesson
+from app.models.lesson import Lesson, LessonAvailableToGroup
 from app.models.task import Task, Solution, TaskCheckStatus
 from app.models.course import Course
 from app.models.pupil import Pupil
@@ -22,7 +22,8 @@ def tasks_count_of_pupil_for_course(*, pupil_id,
         .select_from(Pupil).filter(Pupil.id == pupil_id) \
         .join(Pupil.groups) \
         .join(Group.courses) \
-        .join(Lesson, Lesson.course_id == Course.id) \
+        .join(LessonAvailableToGroup, Group.id == LessonAvailableToGroup.group_id) \
+        .join(Lesson, and_(Lesson.course_id == Course.id, Lesson.id == LessonAvailableToGroup.lesson_id)) \
         .join(Task, Task.lesson_id == Lesson.id) \
         .outerjoin(Solution,
                    and_(Solution.task_id == Task.id,
@@ -34,7 +35,7 @@ def tasks_count_of_pupil_for_course(*, pupil_id,
     else:
         query = query.filter(Solution.review_status.isnot(TaskCheckStatus.ACCESS))
 
-    query = query\
+    query = query \
         .group_by(Group.id, Course.id) \
         .order_by(Group.id, Course.id)
 
@@ -53,7 +54,7 @@ def count_tasks_solved_for_lessons_by_pupil(*, pupil_id, group_id):
         .join(Lesson.tasks) \
         .join(Solution, and_(Solution.pupil_id == pupil_id, Solution.group_id == group_id,
                              Solution.task_id == Task.id,
-                             Solution.review_status.is_(TaskCheckStatus.ACCESS)))\
+                             Solution.review_status.is_(TaskCheckStatus.ACCESS))) \
         .group_by(Lesson.id)
     return query.all()
 

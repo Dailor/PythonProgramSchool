@@ -45,7 +45,7 @@ function init_chart(group_id, course_id){
 $(document).ready(function(){
     for(group_id in statistic_for_group){
         for (course_id in statistic_for_group[group_id].courses){
-            init_chart(group_id, course_id);
+            init_chart(group_id, course_id)
         }
     }
 })

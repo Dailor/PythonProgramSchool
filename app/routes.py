@@ -148,43 +148,43 @@ def pupil_profile(pupil_id):
 
     pupil = session.query(Pupil).get(pupil_id)
 
-    # Group.id, Topic.id, Group.name, Topic.name, func.count(distinct(Task.id)), solution_status
-    tasks_success_count_of_pupil_for_topics = tasks_count_of_pupil_for_course(pupil_id=pupil_id,
+    # Group.id, course.id, Group.name, course.name, func.count(distinct(Task.id)), solution_status
+    tasks_success_count_of_pupil_for_courses = tasks_count_of_pupil_for_course(pupil_id=pupil_id,
                                                                               solution_status=TaskCheckStatus.ACCESS)
 
-    tasks_unsolved_count_of_pupil_for_topics = tasks_count_of_pupil_for_course(pupil_id=pupil_id, solution_status=None)
+    tasks_unsolved_count_of_pupil_for_courses = tasks_count_of_pupil_for_course(pupil_id=pupil_id, solution_status=None)
 
     statistic_solved_and_unsolved_task_for_group_of_pupil = dict()
 
-    for (group_id, topic_id), topic_statistic in groupby(
-            tasks_success_count_of_pupil_for_topics + tasks_unsolved_count_of_pupil_for_topics, lambda x: (x[0], x[1])):
+    for (group_id, course_id), course_statistic in groupby(
+            tasks_success_count_of_pupil_for_courses + tasks_unsolved_count_of_pupil_for_courses, lambda x: (x[0], x[1])):
 
-        topic_statistic = list(topic_statistic)
+        course_statistic = list(course_statistic)
 
-        group_name = topic_statistic[0][2]
-        topic_name = topic_statistic[0][3]
+        group_name = course_statistic[0][2]
+        course_name = course_statistic[0][3]
 
-        if len(topic_statistic) == 2:
-            if topic_statistic[0][-1] is TaskCheckStatus.ACCESS:
-                topic_solved_count, topic_unsolved_count = topic_statistic[0][4], topic_statistic[1][4]
+        if len(course_statistic) == 2:
+            if course_statistic[0][-1] is TaskCheckStatus.ACCESS:
+                course_solved_count, course_unsolved_count = course_statistic[0][4], course_statistic[1][4]
             else:
-                topic_unsolved_count, topic_solved_count = topic_statistic[1][4], topic_statistic[0][4]
+                course_unsolved_count, course_solved_count = course_statistic[1][4], course_statistic[0][4]
         else:
-            if topic_statistic[0][-1] is TaskCheckStatus.ACCESS:
-                topic_solved_count, topic_unsolved_count = topic_statistic[0][4], 0
+            if course_statistic[0][-1] is TaskCheckStatus.ACCESS:
+                course_solved_count, course_unsolved_count = course_statistic[0][4], 0
             else:
-                topic_solved_count, topic_unsolved_count = 0, topic_statistic[0][4]
+                course_solved_count, course_unsolved_count = 0, course_statistic[0][4]
 
-        topic_statistic_dict = {'topic_name': topic_name,
-                                'solved': topic_solved_count,
-                                'unsolved': topic_unsolved_count}
+        course_statistic_dict = {'course_name': course_name,
+                                'solved': course_solved_count,
+                                'unsolved': course_unsolved_count}
 
         if group_id not in statistic_solved_and_unsolved_task_for_group_of_pupil:
             statistic_solved_and_unsolved_task_for_group_of_pupil[group_id] = {'group_name': group_name,
-                                                                               'course': {
-                                                                                   topic_id: topic_statistic_dict}}
+                                                                               'courses': {
+                                                                                   course_id: course_statistic_dict}}
         else:
-            statistic_solved_and_unsolved_task_for_group_of_pupil[group_id]['course'][topic_id] = topic_statistic_dict
+            statistic_solved_and_unsolved_task_for_group_of_pupil[group_id]['courses'][course_id] = course_statistic_dict
 
     return render_template('pupil_profile.html', pupil=pupil,
                            statistic_for_group=statistic_solved_and_unsolved_task_for_group_of_pupil)
